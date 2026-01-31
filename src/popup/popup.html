@@ -8,8 +8,78 @@
 </head>
 <body>
   <div id="app">
-    <h1>RolePrompt</h1>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+          <path d="M4 20C4 16.6863 7.13401 14 11 14H13C16.866 14 20 16.6863 20 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M15 3L17 5L15 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1 class="header-title">RolePrompt</h1>
+    </header>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <label for="role-input" class="search-label">What expert do you need?</label>
+      <div class="search-input-wrapper">
+        <input
+          type="text"
+          id="role-input"
+          class="search-input"
+          placeholder="e.g., UX researcher, tax strategist..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button id="clear-btn" class="clear-btn hidden" type="button" aria-label="Clear search">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Suggestions Dropdown -->
+      <div id="suggestions" class="suggestions hidden">
+        <!-- Suggestions will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Empty State Helper -->
+    <div id="empty-state" class="empty-state">
+      <p class="helper-text">Select a role to generate your prompt.</p>
+    </div>
+
+    <!-- Sensitive Role Disclaimer -->
+    <div id="sensitive-disclaimer" class="disclaimer hidden">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 5V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="8" cy="11" r="0.75" fill="currentColor"/>
+      </svg>
+      <span>This prompt includes a disclaimer — this role cannot provide professional advice.</span>
+    </div>
+
+    <!-- Generated Prompt Panel -->
+    <div id="prompt-panel" class="prompt-panel hidden">
+      <div class="prompt-content" id="prompt-content">
+        <!-- Generated prompt will appear here -->
+      </div>
+    </div>
+
+    <!-- Footer with CTA -->
+    <footer class="footer">
+      <button id="copy-btn" class="copy-btn" disabled>
+        <span class="copy-btn-text">Copy prompt</span>
+        <span class="copy-btn-success hidden">Copied</span>
+      </button>
+      <div class="footer-meta">
+        <button id="start-over-btn" class="start-over-btn hidden">Start over</button>
+        <span class="keyboard-hint hidden" id="keyboard-hint">Ctrl+C to copy</span>
+      </div>
+    </footer>
   </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

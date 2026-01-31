@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "RolePrompt",
-  "description": "A Chrome extension for managing role-based prompts",
+  "description": "Generate expert role prompts for AI chat with one click",
   "version": "1.0.0",
   "action": {
     "default_popup": "src/popup/popup.html",
@@ -11,10 +11,7 @@
       "128": "public/icon128.png"
     }
   },
-  "permissions": ["storage"],
-  "background": {
-    "service_worker": "src/background/background.js"
-  },
+  "permissions": ["clipboardWrite"],
   "icons": {
     "16": "public/icon16.png",
     "48": "public/icon48.png",
