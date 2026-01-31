@@ -4382,7 +4382,6 @@ let state = {
   context: '',
   outputFormat: '',
   firstOutputText: '',
-  theme: 'light',
   guardrailsEnabled: true,
   editMode: false,
   editedPrompt: null,
@@ -4427,7 +4426,6 @@ async function init() {
   el.taskInput = document.getElementById('task-input');
   el.contextInput = document.getElementById('context-input');
   el.outputFormatSelect = document.getElementById('output-format-select');
-  el.themeBtn = document.getElementById('theme-btn');
   el.modeSelect = document.getElementById('mode-select');
   el.firstOutputGroup = document.getElementById('first-output-group');
   el.firstOutputInput = document.getElementById('first-output-input');
@@ -4452,11 +4450,7 @@ async function init() {
   el.cFirstOutput = document.getElementById('c-first-output');
 
   // Load saved data
-  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled', 'theme']);
-
-  // Apply theme
-  state.theme = saved.theme || 'light';
-  document.body.setAttribute('data-theme', state.theme);
+  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled']);
   state.presets = saved.presets || [];
   state.history = saved.history || [];
   state.defaultPresetId = saved.defaultPresetId || null;
@@ -4501,13 +4495,6 @@ function bindEvents() {
     state.guardrailsEnabled = el.guardrailsToggle.checked;
     await Storage.set({ guardrailsEnabled: state.guardrailsEnabled });
     if (state.selectedRole) regeneratePrompt();
-  });
-
-  // Theme toggle
-  el.themeBtn.addEventListener('click', async () => {
-    state.theme = state.theme === 'light' ? 'dark' : 'light';
-    document.body.setAttribute('data-theme', state.theme);
-    await Storage.set({ theme: state.theme });
   });
 
   // Collapsible sections
