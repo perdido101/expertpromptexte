@@ -3,50 +3,50 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Light theme (default) */
+  /* Light theme */
   --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #f1f3f4;
-  --bg-hover: #e8eaed;
-  --bg-active: #dadce0;
-  --text-primary: #202124;
-  --text-secondary: #5f6368;
-  --text-muted: #9aa0a6;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #ebebeb;
+  --bg-hover: #e0e0e0;
+  --bg-active: #d5d5d5;
+  --text-primary: #0a0a0a;
+  --text-secondary: #525252;
+  --text-muted: #8a8a8a;
   --border-color: #e0e0e0;
-  --border-focus: #1a73e8;
-  --accent: #1a73e8;
-  --accent-hover: #1557b0;
-  --accent-light: #e8f0fe;
-  --success: #34a853;
-  --warning: #ea8600;
-  --warning-bg: #fef7e0;
-  --danger: #ea4335;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --border-focus: #0a0a0a;
+  --accent: #0a0a0a;
+  --accent-hover: #262626;
+  --accent-light: #f0f0f0;
+  --success: #22c55e;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --danger: #dc2626;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
 }
 
 [data-theme="dark"] {
-  --bg-primary: #1e1e1e;
-  --bg-secondary: #252526;
-  --bg-tertiary: #2d2d30;
-  --bg-hover: #3c3c3c;
-  --bg-active: #4a4a4a;
-  --text-primary: #e4e4e4;
-  --text-secondary: #a0a0a0;
-  --text-muted: #6e6e6e;
-  --border-color: #3c3c3c;
-  --border-focus: #4fc3f7;
-  --accent: #4fc3f7;
-  --accent-hover: #29b6f6;
-  --accent-light: #1e3a4a;
-  --success: #81c784;
-  --warning: #ffb74d;
-  --warning-bg: #3d3020;
-  --danger: #e57373;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  --bg-tertiary: #1a1a1a;
+  --bg-hover: #262626;
+  --bg-active: #333333;
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-muted: #525252;
+  --border-color: #262626;
+  --border-focus: #fafafa;
+  --accent: #fafafa;
+  --accent-hover: #e5e5e5;
+  --accent-light: #1a1a1a;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --warning-bg: #292524;
+  --danger: #f87171;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
 }
 
 body {
