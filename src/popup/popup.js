@@ -4035,66 +4035,69 @@ const AMBIGUOUS_ROLES = {
 };
 
 // ============================================
+// FEATURE FLAGS (for future Pro gating)
+// ============================================
+const FEATURE_FLAGS = {
+  savedRoles: true,
+  modes: true,
+  chaining: true,
+  history: true,
+  export: true,
+  guardrails: true,
+  editing: true,
+  constraints: true,
+  taskContext: true
+};
+
+// ============================================
 // SEARCH ENGINE
 // ============================================
-
-function levenshteinDistance(str1, str2) {
-  const m = str1.length, n = str2.length;
+function levenshteinDistance(a, b) {
+  const m = a.length, n = b.length;
   const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
   for (let i = 0; i <= m; i++) dp[i][0] = i;
   for (let j = 0; j <= n; j++) dp[0][j] = j;
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (str1[i - 1] === str2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
-      else dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1);
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]) + 1;
     }
   }
   return dp[m][n];
 }
 
-function getSimilarity(str1, str2) {
-  const maxLen = Math.max(str1.length, str2.length);
-  if (maxLen === 0) return 1;
-  return 1 - levenshteinDistance(str1.toLowerCase(), str2.toLowerCase()) / maxLen;
+function getSimilarity(a, b) {
+  const max = Math.max(a.length, b.length);
+  return max === 0 ? 1 : 1 - levenshteinDistance(a.toLowerCase(), b.toLowerCase()) / max;
 }
 
 function searchRoles(query, maxResults = 5) {
   if (!query || query.length < 2) return [];
   const q = query.toLowerCase().trim();
-  const results = [];
-  const seen = new Set();
+  const results = [], seen = new Set();
 
-  // Multi-role check
   if (/\s*[+&]\s*/.test(q) || /\s+and\s+/i.test(q)) {
-    const parts = q.split(/\s*[+&]\s*|\s+and\s+/i).map(p => p.trim()).filter(p => p);
+    const parts = q.split(/\s*[+&]\s*|\s+and\s+/i).map(p => p.trim()).filter(Boolean);
     const valid = parts.filter(p => ROLE_DATABASE[ROLE_SYNONYMS[p] || p]);
     if (valid.length >= 2) {
-      const name = parts.map(p => {
-        const k = ROLE_SYNONYMS[p] || p;
-        return ROLE_DATABASE[k]?.name || p.charAt(0).toUpperCase() + p.slice(1);
-      }).join(' + ');
+      const name = parts.map(p => (ROLE_DATABASE[ROLE_SYNONYMS[p] || p]?.name || p.charAt(0).toUpperCase() + p.slice(1))).join(' + ');
       results.push({ key: q, name, description: 'combined expertise', score: 1, isMultiRole: true });
     }
   }
 
-  // Synonym match
   if (ROLE_SYNONYMS[q] && !seen.has(ROLE_SYNONYMS[q])) {
     const k = ROLE_SYNONYMS[q], r = ROLE_DATABASE[k];
     if (r) { seen.add(k); results.push({ key: k, name: r.name, description: r.description, score: 0.99 }); }
   }
 
-  // Ambiguous
   if (AMBIGUOUS_ROLES[q]) {
     results.push({ key: q, name: q.charAt(0).toUpperCase() + q.slice(1), description: 'multiple specializations', score: 0.98, isAmbiguous: true, disambiguations: AMBIGUOUS_ROLES[q] });
   }
 
-  // Exact match
   if (ROLE_DATABASE[q] && !seen.has(q)) {
     seen.add(q);
     results.push({ key: q, name: ROLE_DATABASE[q].name, description: ROLE_DATABASE[q].description, score: 1 });
   }
 
-  // Prefix + contains + fuzzy
   Object.entries(ROLE_DATABASE).forEach(([k, r]) => {
     if (seen.has(k)) return;
     if (k.startsWith(q)) { seen.add(k); results.push({ key: k, name: r.name, description: r.description, score: 0.9 }); }
@@ -4105,7 +4108,6 @@ function searchRoles(query, maxResults = 5) {
     }
   });
 
-  // Synonym prefix/fuzzy
   Object.entries(ROLE_SYNONYMS).forEach(([syn, k]) => {
     if (seen.has(k)) return;
     const r = ROLE_DATABASE[k];
@@ -4117,36 +4119,30 @@ function searchRoles(query, maxResults = 5) {
     }
   });
 
-  results.sort((a, b) => b.score - a.score);
-  return results.slice(0, maxResults);
+  return results.sort((a, b) => b.score - a.score).slice(0, maxResults);
 }
 
 // ============================================
 // PROMPT GENERATOR
 // ============================================
-
-const OPERATING_CONTRACT = `You are an expert consultant. Your purpose is to provide thoughtful, well-reasoned assistance within your domain of expertise. You draw on deep knowledge, established frameworks, and practical experience. You think before responding. You acknowledge the boundaries of your role and flag when a question exceeds your scope or requires a qualified professional.`;
-
-const CONSTRAINTS_BLOCK = `Constraints:
-- Be direct; avoid unnecessary hedging
-- If uncertain, say so explicitly
-- Do not fabricate sources or citations
-- Ask clarifying questions if the request is ambiguous`;
-
-const OUTPUT_FORMAT_BLOCK = `Response format:
-- Lead with the most important insight or recommendation
-- Use structured formatting (bullets, headers) when helpful
-- End with a suggested next step or follow-up question if appropriate`;
+const SENSITIVE_KEYWORDS = ['medical', 'doctor', 'health', 'diagnos', 'prescri', 'treatment', 'legal', 'lawyer', 'attorney', 'lawsuit', 'financial', 'invest', 'tax', 'accountant', 'therapy', 'therapist', 'psycholog', 'psychiatr', 'nurse', 'pharmac', 'dentist'];
 
 const DISCLAIMERS = {
-  medical: "Provides informational guidance only. This does not constitute professional medical advice. Consult a qualified healthcare professional for decisions affecting your health.",
-  legal: "Provides informational guidance only. This does not constitute legal advice. Consult a qualified attorney for decisions affecting your legal standing.",
-  financial: "Provides informational guidance only. This does not constitute professional financial advice. Consult a qualified financial professional for decisions affecting your finances."
+  medical: "\n\n⚠️ INFORMATIONAL ONLY: This does not constitute professional medical advice. Consult a qualified healthcare professional for decisions affecting your health.",
+  legal: "\n\n⚠️ INFORMATIONAL ONLY: This does not constitute legal advice. Consult a qualified attorney for decisions affecting your legal standing.",
+  financial: "\n\n⚠️ INFORMATIONAL ONLY: This does not constitute professional financial advice. Consult a qualified financial professional for decisions affecting your finances."
 };
 
-function generateKnownRoleBlock(role) {
+const MODE_PRESETS = {
+  default: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false },
+  absolute: { noQuestions: true, noEmojis: true, bullets: false, concise: true, stepByStep: false, risks: false },
+  collaborative: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
+  executive: { noQuestions: true, noEmojis: true, bullets: true, concise: true, stepByStep: false, risks: true }
+};
+
+function generateRoleBlock(role) {
   const resp = role.responsibilities.map(r => `- ${r}`).join('\n');
-  let block = `**Your role: ${role.name}**
+  return `**Your role: ${role.name}**
 
 Domain: ${role.domain}
 
@@ -4160,8 +4156,6 @@ Frameworks: ${role.frameworks}
 Priorities: ${role.priorities}
 
 Boundaries: ${role.boundaries}`;
-  if (role.sensitive && role.disclaimer) block += `\n\n${DISCLAIMERS[role.disclaimer]}`;
-  return block;
 }
 
 function generateUnknownRoleBlock(roleName) {
@@ -4186,144 +4180,397 @@ Priorities: Accuracy, practical utility, and clear communication.
 Boundaries: You provide informational guidance based on general expertise. You do not claim specific credentials or replace professional consultation when needed.`;
 }
 
-function generateCombinedRoleBlock(roles) {
-  const names = roles.map(r => r.name).join(' + ');
-  const allResp = new Set();
-  roles.forEach(r => r.responsibilities.forEach(x => allResp.add(x)));
-  const resp = Array.from(allResp).slice(0, 8).map(r => `- ${r}`).join('\n');
-  const frameworks = roles.map(r => r.frameworks.replace('You draw on ', '')).join('; also ');
-  let block = `**Your role: ${names}**
+function generateChainPrompt(chain, options) {
+  const roleBlocks = chain.map((roleKey, idx) => {
+    const role = ROLE_DATABASE[ROLE_SYNONYMS[roleKey] || roleKey];
+    const block = role ? generateRoleBlock(role) : generateUnknownRoleBlock(roleKey);
+    return `### Step ${idx + 1}: ${role?.name || roleKey.charAt(0).toUpperCase() + roleKey.slice(1)}\n${block}`;
+  }).join('\n\n---\n\n');
 
-Domain: Combined expertise in ${roles.map(r => r.domain.split(' — ')[0]).join(' and ')}.
+  return `You will execute a multi-role workflow. Process the request through each role in sequence, clearly separating each phase of analysis.
 
-Perspective: You bring a hybrid perspective, combining the approaches of ${roles.map(r => r.name.toLowerCase()).join(' and ')}.
+${roleBlocks}
+
+Execute each role in order. Clearly label each section of your response with the role name. Each role should build upon the previous role's output.`;
+}
+
+function generatePrompt(roleInput, options = {}) {
+  const { mode = 'default', constraints = {}, task = '', context = '', outputFormat = '', firstOutput = '', chain = [], guardrailsEnabled = true } = options;
+
+  let prompt = '';
+  let isSensitive = false;
+  let roleNames = [];
+
+  // Operating contract
+  prompt = `You are an expert consultant. Your purpose is to provide thoughtful, well-reasoned assistance within your domain of expertise. You draw on deep knowledge, established frameworks, and practical experience. You think before responding. You acknowledge the boundaries of your role and flag when a question exceeds your scope or requires a qualified professional.`;
+
+  // Handle chain vs single role
+  if (chain.length > 1) {
+    prompt += '\n\n' + generateChainPrompt(chain, options);
+    roleNames = chain.map(k => ROLE_DATABASE[ROLE_SYNONYMS[k] || k]?.name || k.charAt(0).toUpperCase() + k.slice(1));
+    isSensitive = chain.some(k => {
+      const r = ROLE_DATABASE[ROLE_SYNONYMS[k] || k];
+      return r?.sensitive;
+    });
+  } else {
+    const q = roleInput.toLowerCase().trim();
+    const isMulti = /\s*[+&]\s*/.test(q) || /\s+and\s+/i.test(q);
+
+    if (isMulti) {
+      const parts = q.split(/\s*[+&]\s*|\s+and\s+/i).map(p => p.trim()).filter(Boolean);
+      const found = parts.map(p => ROLE_DATABASE[ROLE_SYNONYMS[p] || p]).filter(Boolean);
+      if (found.length >= 2) {
+        const names = found.map(r => r.name).join(' + ');
+        const allResp = new Set();
+        found.forEach(r => r.responsibilities.forEach(x => allResp.add(x)));
+        const resp = Array.from(allResp).slice(0, 8).map(r => `- ${r}`).join('\n');
+        const frameworks = found.map(r => r.frameworks.replace('You draw on ', '')).join('; also ');
+        prompt += `\n\n**Your role: ${names}**
+
+Domain: Combined expertise in ${found.map(r => r.domain.split(' — ')[0]).join(' and ')}.
+
+Perspective: You bring a hybrid perspective, combining the approaches of ${found.map(r => r.name.toLowerCase()).join(' and ')}.
 
 Responsibilities:
 ${resp}
 
 Frameworks: You draw on ${frameworks}.
 
-Priorities: ${roles.map(r => r.priorities.toLowerCase()).join(', ')}.
+Priorities: ${found.map(r => r.priorities.toLowerCase()).join(', ')}.
 
-Boundaries: ${roles.map(r => r.boundaries).join(' ')}`;
-  const disclaimers = roles.filter(r => r.sensitive && r.disclaimer).map(r => r.disclaimer);
-  [...new Set(disclaimers)].forEach(d => { block += `\n\n${DISCLAIMERS[d]}`; });
-  return block;
-}
-
-function generatePrompt(roleInput) {
-  const q = roleInput.toLowerCase().trim();
-  const isMulti = /\s*[+&]\s*/.test(q) || /\s+and\s+/i.test(q);
-  let roleBlock, isSensitive = false, roleNames = [];
-
-  if (isMulti) {
-    const parts = q.split(/\s*[+&]\s*|\s+and\s+/i).map(p => p.trim()).filter(p => p);
-    const found = parts.map(p => ROLE_DATABASE[ROLE_SYNONYMS[p] || p]).filter(Boolean);
-    if (found.length >= 2) {
-      roleBlock = generateCombinedRoleBlock(found);
-      isSensitive = found.some(r => r.sensitive);
-      roleNames = found.map(r => r.name);
-    } else if (found.length === 1) {
-      roleBlock = generateKnownRoleBlock(found[0]);
-      isSensitive = found[0].sensitive;
-      roleNames = [found[0].name];
+Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
+        isSensitive = found.some(r => r.sensitive);
+        roleNames = found.map(r => r.name);
+      }
     } else {
-      roleBlock = generateUnknownRoleBlock(roleInput);
-      roleNames = [roleInput.charAt(0).toUpperCase() + roleInput.slice(1)];
-    }
-  } else {
-    const role = ROLE_DATABASE[ROLE_SYNONYMS[q] || q];
-    if (role) {
-      roleBlock = generateKnownRoleBlock(role);
-      isSensitive = role.sensitive;
-      roleNames = [role.name];
-    } else {
-      roleBlock = generateUnknownRoleBlock(roleInput);
-      roleNames = [roleInput.charAt(0).toUpperCase() + roleInput.slice(1)];
+      const role = ROLE_DATABASE[ROLE_SYNONYMS[q] || q];
+      if (role) {
+        prompt += '\n\n' + generateRoleBlock(role);
+        isSensitive = role.sensitive;
+        roleNames = [role.name];
+      } else {
+        prompt += '\n\n' + generateUnknownRoleBlock(roleInput);
+        roleNames = [roleInput.charAt(0).toUpperCase() + roleInput.slice(1)];
+      }
     }
   }
 
-  return {
-    prompt: `${OPERATING_CONTRACT}\n\n${roleBlock}\n\n${CONSTRAINTS_BLOCK}\n\n${OUTPUT_FORMAT_BLOCK}`,
-    isSensitive,
-    roleNames
-  };
+  // Build constraints block
+  const activeConstraints = [];
+  const modePreset = MODE_PRESETS[mode] || MODE_PRESETS.default;
+  const c = { ...modePreset, ...constraints };
+
+  if (c.noQuestions) activeConstraints.push('Do not ask clarifying questions; work with what is provided');
+  if (c.noEmojis) activeConstraints.push('Do not use emojis in your response');
+  if (c.bullets) activeConstraints.push('Use bullet points for all lists and key points');
+  if (c.concise) activeConstraints.push('Be ultra concise; one-sentence answers where possible');
+  if (c.stepByStep) activeConstraints.push('Provide a step-by-step plan');
+  if (c.risks) activeConstraints.push('Include potential risks and mitigations');
+
+  // Default constraints
+  activeConstraints.push('Be direct; avoid unnecessary hedging');
+  activeConstraints.push('If uncertain, say so explicitly');
+  activeConstraints.push('Do not fabricate sources or citations');
+  if (!c.noQuestions && mode === 'collaborative') {
+    activeConstraints.push('Ask clarifying questions before providing your analysis');
+  }
+
+  prompt += `\n\nConstraints:\n${activeConstraints.map(c => `- ${c}`).join('\n')}`;
+
+  // Output format
+  let outputSection = 'Response format:\n';
+  if (outputFormat) {
+    outputSection += `- ${outputFormat}\n`;
+  }
+  if (firstOutput) {
+    outputSection += `- First output should be: ${firstOutput}\n`;
+  }
+  outputSection += '- Lead with the most important insight or recommendation\n';
+  outputSection += '- Use structured formatting (bullets, headers) when helpful\n';
+  if (mode !== 'absolute') {
+    outputSection += '- End with a suggested next step or follow-up question if appropriate';
+  }
+  prompt += '\n\n' + outputSection;
+
+  // Task and context
+  if (task || context) {
+    prompt += '\n\n---\n\n';
+    if (task) prompt += `**Task:** ${task}\n\n`;
+    if (context) prompt += `**Context:** ${context}`;
+  }
+
+  // Guardrails for sensitive roles
+  if (guardrailsEnabled && isSensitive) {
+    const roleStr = roleInput.toLowerCase();
+    if (SENSITIVE_KEYWORDS.some(kw => roleStr.includes(kw))) {
+      if (roleStr.includes('medical') || roleStr.includes('doctor') || roleStr.includes('health') || roleStr.includes('nurse') || roleStr.includes('pharmac') || roleStr.includes('dentist') || roleStr.includes('therap') || roleStr.includes('psycholog')) {
+        prompt += DISCLAIMERS.medical;
+      } else if (roleStr.includes('legal') || roleStr.includes('lawyer') || roleStr.includes('attorney')) {
+        prompt += DISCLAIMERS.legal;
+      } else if (roleStr.includes('financial') || roleStr.includes('invest') || roleStr.includes('tax') || roleStr.includes('accountant')) {
+        prompt += DISCLAIMERS.financial;
+      }
+    }
+  }
+
+  return { prompt, isSensitive, roleNames };
 }
 
 // ============================================
-// POPUP CONTROLLER
+// STORAGE MANAGER
 // ============================================
+const Storage = {
+  async get(keys) {
+    return new Promise(resolve => {
+      if (chrome?.storage?.local) {
+        chrome.storage.local.get(keys, resolve);
+      } else {
+        const result = {};
+        keys.forEach(k => {
+          const v = localStorage.getItem(k);
+          if (v) result[k] = JSON.parse(v);
+        });
+        resolve(result);
+      }
+    });
+  },
+  async set(data) {
+    return new Promise(resolve => {
+      if (chrome?.storage?.local) {
+        chrome.storage.local.set(data, resolve);
+      } else {
+        Object.entries(data).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
+        resolve();
+      }
+    });
+  }
+};
 
-let state = { query: '', suggestions: [], highlightedIndex: -1, selectedRole: null, generatedPrompt: null, isSensitive: false };
-const elements = {};
+// ============================================
+// APP STATE
+// ============================================
+let state = {
+  query: '',
+  suggestions: [],
+  highlightedIndex: -1,
+  selectedRole: null,
+  generatedPrompt: null,
+  isSensitive: false,
+  roleNames: [],
+  // New state
+  chain: [],
+  mode: 'default',
+  constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
+  task: '',
+  context: '',
+  outputFormat: '',
+  firstOutputText: '',
+  guardrailsEnabled: true,
+  editMode: false,
+  editedPrompt: null,
+  presets: [],
+  history: [],
+  defaultPresetId: null,
+  activeTab: 'presets'
+};
+
+const el = {};
 let debounceTimer = null;
 
-function init() {
-  elements.input = document.getElementById('role-input');
-  elements.clearBtn = document.getElementById('clear-btn');
-  elements.suggestions = document.getElementById('suggestions');
-  elements.emptyState = document.getElementById('empty-state');
-  elements.sensitiveDisclaimer = document.getElementById('sensitive-disclaimer');
-  elements.promptPanel = document.getElementById('prompt-panel');
-  elements.promptContent = document.getElementById('prompt-content');
-  elements.copyBtn = document.getElementById('copy-btn');
-  elements.copyBtnText = elements.copyBtn.querySelector('.copy-btn-text');
-  elements.copyBtnSuccess = elements.copyBtn.querySelector('.copy-btn-success');
-  elements.startOverBtn = document.getElementById('start-over-btn');
-  elements.keyboardHint = document.getElementById('keyboard-hint');
+// ============================================
+// INITIALIZATION
+// ============================================
+async function init() {
+  // Cache DOM elements
+  el.input = document.getElementById('role-input');
+  el.clearBtn = document.getElementById('clear-btn');
+  el.suggestions = document.getElementById('suggestions');
+  el.emptyState = document.getElementById('empty-state');
+  el.disclaimer = document.getElementById('sensitive-disclaimer');
+  el.promptPanel = document.getElementById('prompt-panel');
+  el.promptContent = document.getElementById('prompt-content');
+  el.promptEditor = document.getElementById('prompt-editor');
+  el.editToggle = document.getElementById('edit-toggle');
+  el.copyBtn = document.getElementById('copy-btn');
+  el.saveBtn = document.getElementById('save-preset-btn');
+  el.exportBtn = document.getElementById('export-btn');
+  el.exportMenu = document.getElementById('export-menu');
+  el.settingsBtn = document.getElementById('settings-btn');
+  el.settingsPanel = document.getElementById('settings-panel');
+  el.closeSettings = document.getElementById('close-settings');
+  el.guardrailsToggle = document.getElementById('guardrails-toggle');
+  el.chainSection = document.getElementById('chain-section');
+  el.chainContent = document.getElementById('chain-content');
+  el.chainList = document.getElementById('chain-list');
+  el.chainCount = document.getElementById('chain-count');
+  el.addToChain = document.getElementById('add-to-chain');
+  el.contextContent = document.getElementById('context-content');
+  el.constraintsContent = document.getElementById('constraints-content');
+  el.taskInput = document.getElementById('task-input');
+  el.contextInput = document.getElementById('context-input');
+  el.outputFormatInput = document.getElementById('output-format-input');
+  el.modeSelect = document.getElementById('mode-select');
+  el.firstOutputGroup = document.getElementById('first-output-group');
+  el.firstOutputInput = document.getElementById('first-output-input');
+  el.presetsTab = document.getElementById('presets-tab');
+  el.historyTab = document.getElementById('history-tab');
+  el.presetsList = document.getElementById('presets-list');
+  el.historyList = document.getElementById('history-list');
+  el.saveModal = document.getElementById('save-modal');
+  el.presetNameInput = document.getElementById('preset-name-input');
+  el.setDefaultCheckbox = document.getElementById('set-default-checkbox');
+  el.confirmSave = document.getElementById('confirm-save');
+  el.cancelSave = document.getElementById('cancel-save');
+  el.closeModal = document.getElementById('close-modal');
 
-  elements.input.addEventListener('input', handleInput);
-  elements.input.addEventListener('keydown', handleKeydown);
-  elements.clearBtn.addEventListener('click', handleClear);
-  elements.copyBtn.addEventListener('click', handleCopy);
-  elements.startOverBtn.addEventListener('click', handleStartOver);
-  document.addEventListener('click', e => {
-    if (!elements.suggestions.contains(e.target) && !elements.input.contains(e.target)) hideSuggestions();
-  });
+  // Constraint checkboxes
+  el.cNoQuestions = document.getElementById('c-no-questions');
+  el.cNoEmojis = document.getElementById('c-no-emojis');
+  el.cBullets = document.getElementById('c-bullets');
+  el.cConcise = document.getElementById('c-concise');
+  el.cStepByStep = document.getElementById('c-stepbystep');
+  el.cRisks = document.getElementById('c-risks');
+  el.cFirstOutput = document.getElementById('c-first-output');
 
-  elements.keyboardHint.textContent = navigator.platform.includes('Mac') ? '\u2318C to copy' : 'Ctrl+C to copy';
-  elements.input.focus();
+  // Load saved data
+  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled']);
+  state.presets = saved.presets || [];
+  state.history = saved.history || [];
+  state.defaultPresetId = saved.defaultPresetId || null;
+  state.guardrailsEnabled = saved.guardrailsEnabled !== false;
+  el.guardrailsToggle.checked = state.guardrailsEnabled;
+
+  // Bind events
+  bindEvents();
+
+  // Render initial state
+  renderPresets();
+  renderHistory();
+
+  // Load default preset if exists
+  if (state.defaultPresetId) {
+    const defaultPreset = state.presets.find(p => p.id === state.defaultPresetId);
+    if (defaultPreset) loadPreset(defaultPreset);
+  }
+
+  el.input.focus();
 }
 
+function bindEvents() {
+  // Search
+  el.input.addEventListener('input', handleInput);
+  el.input.addEventListener('keydown', handleKeydown);
+  el.clearBtn.addEventListener('click', handleClear);
+  document.addEventListener('click', handleOutsideClick);
+
+  // Actions
+  el.copyBtn.addEventListener('click', handleCopy);
+  el.saveBtn.addEventListener('click', () => el.saveModal.classList.remove('hidden'));
+  el.exportBtn.addEventListener('click', toggleExportMenu);
+  el.exportMenu.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => handleExport(btn.dataset.format));
+  });
+
+  // Settings
+  el.settingsBtn.addEventListener('click', () => el.settingsPanel.classList.toggle('hidden'));
+  el.closeSettings.addEventListener('click', () => el.settingsPanel.classList.add('hidden'));
+  el.guardrailsToggle.addEventListener('change', async () => {
+    state.guardrailsEnabled = el.guardrailsToggle.checked;
+    await Storage.set({ guardrailsEnabled: state.guardrailsEnabled });
+    if (state.selectedRole) regeneratePrompt();
+  });
+
+  // Collapsible sections
+  document.querySelectorAll('.section-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const targetId = header.dataset.toggle;
+      const content = document.getElementById(targetId);
+      header.classList.toggle('expanded');
+      content.classList.toggle('hidden');
+    });
+  });
+
+  // Chain
+  el.addToChain.addEventListener('click', addToChain);
+
+  // Mode & Constraints
+  el.modeSelect.addEventListener('change', handleModeChange);
+  [el.cNoQuestions, el.cNoEmojis, el.cBullets, el.cConcise, el.cStepByStep, el.cRisks].forEach(cb => {
+    cb.addEventListener('change', handleConstraintChange);
+  });
+  el.cFirstOutput.addEventListener('change', () => {
+    el.firstOutputGroup.classList.toggle('hidden', !el.cFirstOutput.checked);
+    handleConstraintChange();
+  });
+  el.firstOutputInput.addEventListener('input', () => {
+    state.firstOutputText = el.firstOutputInput.value;
+    if (state.selectedRole) regeneratePrompt();
+  });
+
+  // Task/Context
+  [el.taskInput, el.contextInput, el.outputFormatInput].forEach(input => {
+    input.addEventListener('input', () => {
+      state.task = el.taskInput.value;
+      state.context = el.contextInput.value;
+      state.outputFormat = el.outputFormatInput.value;
+      if (state.selectedRole) regeneratePrompt();
+    });
+  });
+
+  // Edit toggle
+  el.editToggle.addEventListener('change', () => {
+    state.editMode = el.editToggle.checked;
+    el.promptContent.classList.toggle('hidden', state.editMode);
+    el.promptEditor.classList.toggle('hidden', !state.editMode);
+    if (state.editMode) {
+      el.promptEditor.value = state.editedPrompt || state.generatedPrompt;
+      el.promptEditor.focus();
+    } else {
+      state.editedPrompt = el.promptEditor.value;
+    }
+  });
+  el.promptEditor.addEventListener('input', () => {
+    state.editedPrompt = el.promptEditor.value;
+  });
+
+  // Tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.activeTab = btn.dataset.tab;
+      el.presetsTab.classList.toggle('hidden', state.activeTab !== 'presets');
+      el.historyTab.classList.toggle('hidden', state.activeTab !== 'history');
+    });
+  });
+
+  // Modal
+  el.confirmSave.addEventListener('click', savePreset);
+  el.cancelSave.addEventListener('click', () => el.saveModal.classList.add('hidden'));
+  el.closeModal.addEventListener('click', () => el.saveModal.classList.add('hidden'));
+}
+
+// ============================================
+// SEARCH HANDLERS
+// ============================================
 function handleInput(e) {
   state.query = e.target.value;
-  elements.clearBtn.classList.toggle('hidden', !state.query);
-  if (state.selectedRole) clearSelection();
+  el.clearBtn.classList.toggle('hidden', !state.query);
+
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     if (state.query.length >= 2) {
       state.suggestions = searchRoles(state.query, 5);
       state.highlightedIndex = state.suggestions.length > 0 ? 0 : -1;
       renderSuggestions();
-    } else hideSuggestions();
+    } else {
+      hideSuggestions();
+    }
   }, 80);
 }
 
-function renderSuggestions() {
-  if (state.suggestions.length === 0) {
-    elements.suggestions.innerHTML = '<div class="suggestion-no-results">No matches \u2014 press Enter to use this role anyway.</div>';
-    elements.suggestions.classList.remove('hidden');
-    return;
-  }
-  let html = '';
-  state.suggestions.forEach((r, i) => {
-    const hl = i === state.highlightedIndex ? 'highlighted' : '';
-    if (r.isAmbiguous && r.disambiguations) {
-      html += `<div class="suggestion-item ${hl}" data-index="${i}" data-ambiguous="true"><span class="suggestion-name">${esc(r.name)}</span><span class="suggestion-description">${esc(r.description)}</span></div>`;
-      html += '<div class="disambiguation-container">' + r.disambiguations.map(d => `<div class="disambiguation-item" data-key="${esc(d.key)}"><span class="suggestion-name">${esc(d.label)}</span><span class="suggestion-description">${esc(d.description)}</span></div>`).join('') + '</div>';
-    } else {
-      html += `<div class="suggestion-item ${hl}" data-index="${i}" data-key="${esc(r.key)}"><span class="suggestion-name">${esc(r.name)}</span><span class="suggestion-description">${esc(r.description)}</span></div>`;
-    }
-  });
-  elements.suggestions.innerHTML = html;
-  elements.suggestions.classList.remove('hidden');
-  elements.suggestions.querySelectorAll('.suggestion-item:not([data-ambiguous]), .disambiguation-item').forEach(el => {
-    el.addEventListener('click', () => selectRole(el.dataset.key));
-  });
-}
-
 function handleKeydown(e) {
-  const visible = !elements.suggestions.classList.contains('hidden');
+  const visible = !el.suggestions.classList.contains('hidden');
   if (e.key === 'ArrowDown' && visible && state.suggestions.length) {
     e.preventDefault();
     state.highlightedIndex = (state.highlightedIndex + 1) % state.suggestions.length;
@@ -4337,99 +4584,501 @@ function handleKeydown(e) {
     if (visible && state.highlightedIndex >= 0 && state.suggestions[state.highlightedIndex]) {
       const s = state.suggestions[state.highlightedIndex];
       selectRole(s.isAmbiguous ? s.disambiguations[0].key : s.key);
-    } else if (state.query.length >= 2) selectRole(state.query);
+    } else if (state.query.length >= 2) {
+      selectRole(state.query);
+    }
   } else if (e.key === 'Escape' && visible) {
     e.preventDefault();
     hideSuggestions();
   }
 }
 
-function updateHighlight() {
-  elements.suggestions.querySelectorAll('.suggestion-item').forEach((el, i) => el.classList.toggle('highlighted', i === state.highlightedIndex));
-}
-
-function selectRole(key) {
-  state.selectedRole = key;
-  const result = generatePrompt(key);
-  state.generatedPrompt = result.prompt;
-  state.isSensitive = result.isSensitive;
-  elements.input.value = result.roleNames.join(' + ');
-  elements.input.classList.add('has-selection');
-  hideSuggestions();
-  elements.emptyState.classList.add('hidden');
-  elements.sensitiveDisclaimer.classList.toggle('hidden', !result.isSensitive);
-  elements.promptContent.textContent = result.prompt;
-  elements.promptPanel.classList.remove('hidden');
-  elements.copyBtn.disabled = false;
-  elements.startOverBtn.classList.remove('hidden');
-  elements.keyboardHint.classList.remove('hidden');
-  elements.clearBtn.classList.remove('hidden');
-  elements.copyBtn.focus();
-}
-
-function clearSelection() {
+function handleClear() {
+  state.query = '';
   state.selectedRole = null;
   state.generatedPrompt = null;
-  elements.input.classList.remove('has-selection');
-  elements.sensitiveDisclaimer.classList.add('hidden');
-  elements.promptPanel.classList.add('hidden');
-  elements.emptyState.classList.remove('hidden');
-  elements.copyBtn.disabled = true;
-  elements.startOverBtn.classList.add('hidden');
-  elements.keyboardHint.classList.add('hidden');
+  state.editedPrompt = null;
+  state.chain = [];
+  el.input.value = '';
+  el.clearBtn.classList.add('hidden');
+  hideSuggestions();
+  updateUI();
+  el.input.focus();
+}
+
+function handleOutsideClick(e) {
+  if (!el.suggestions.contains(e.target) && !el.input.contains(e.target)) {
+    hideSuggestions();
+  }
+  if (!el.exportBtn.contains(e.target) && !el.exportMenu.contains(e.target)) {
+    el.exportMenu.classList.add('hidden');
+  }
+}
+
+function renderSuggestions() {
+  if (state.suggestions.length === 0) {
+    el.suggestions.innerHTML = '<div class="suggestion-no-results">No matches — press Enter to use anyway</div>';
+    el.suggestions.classList.remove('hidden');
+    return;
+  }
+  let html = '';
+  state.suggestions.forEach((r, i) => {
+    const hl = i === state.highlightedIndex ? 'highlighted' : '';
+    if (r.isAmbiguous && r.disambiguations) {
+      html += `<div class="suggestion-item ${hl}" data-index="${i}" data-ambiguous="true"><span class="suggestion-name">${esc(r.name)}</span><span class="suggestion-description">${esc(r.description)}</span></div>`;
+      html += '<div class="disambiguation-container">' + r.disambiguations.map(d => `<div class="disambiguation-item" data-key="${esc(d.key)}"><span class="suggestion-name">${esc(d.label)}</span><span class="suggestion-description">${esc(d.description)}</span></div>`).join('') + '</div>';
+    } else {
+      html += `<div class="suggestion-item ${hl}" data-index="${i}" data-key="${esc(r.key)}"><span class="suggestion-name">${esc(r.name)}</span><span class="suggestion-description">${esc(r.description)}</span></div>`;
+    }
+  });
+  el.suggestions.innerHTML = html;
+  el.suggestions.classList.remove('hidden');
+  el.suggestions.querySelectorAll('.suggestion-item:not([data-ambiguous]), .disambiguation-item').forEach(item => {
+    item.addEventListener('click', () => selectRole(item.dataset.key));
+  });
+}
+
+function updateHighlight() {
+  el.suggestions.querySelectorAll('.suggestion-item').forEach((item, i) => {
+    item.classList.toggle('highlighted', i === state.highlightedIndex);
+  });
 }
 
 function hideSuggestions() {
-  elements.suggestions.classList.add('hidden');
-  elements.suggestions.innerHTML = '';
+  el.suggestions.classList.add('hidden');
+  el.suggestions.innerHTML = '';
   state.highlightedIndex = -1;
 }
 
-function handleClear() { handleStartOver(); elements.input.focus(); }
-
-function handleStartOver() {
-  state = { query: '', suggestions: [], highlightedIndex: -1, selectedRole: null, generatedPrompt: null, isSensitive: false };
-  elements.input.value = '';
-  elements.input.classList.remove('has-selection');
-  elements.clearBtn.classList.add('hidden');
+// ============================================
+// ROLE SELECTION & PROMPT GENERATION
+// ============================================
+function selectRole(key) {
+  state.selectedRole = key;
+  const role = ROLE_DATABASE[ROLE_SYNONYMS[key] || key];
+  el.input.value = role?.name || key.charAt(0).toUpperCase() + key.slice(1);
   hideSuggestions();
-  elements.emptyState.classList.remove('hidden');
-  elements.sensitiveDisclaimer.classList.add('hidden');
-  elements.promptPanel.classList.add('hidden');
-  elements.copyBtn.disabled = true;
-  elements.startOverBtn.classList.add('hidden');
-  elements.keyboardHint.classList.add('hidden');
-  elements.input.focus();
+  el.addToChain.disabled = false;
+  regeneratePrompt();
+  addToHistory();
 }
 
+function regeneratePrompt() {
+  const result = generatePrompt(state.selectedRole, {
+    mode: state.mode,
+    constraints: {
+      noQuestions: el.cNoQuestions.checked,
+      noEmojis: el.cNoEmojis.checked,
+      bullets: el.cBullets.checked,
+      concise: el.cConcise.checked,
+      stepByStep: el.cStepByStep.checked,
+      risks: el.cRisks.checked
+    },
+    task: state.task,
+    context: state.context,
+    outputFormat: state.outputFormat,
+    firstOutput: el.cFirstOutput.checked ? state.firstOutputText : '',
+    chain: state.chain.length > 1 ? state.chain : [],
+    guardrailsEnabled: state.guardrailsEnabled
+  });
+
+  state.generatedPrompt = result.prompt;
+  state.isSensitive = result.isSensitive;
+  state.roleNames = result.roleNames;
+  state.editedPrompt = null;
+
+  updateUI();
+}
+
+function updateUI() {
+  const hasPrompt = !!state.generatedPrompt;
+
+  el.emptyState.classList.toggle('hidden', hasPrompt);
+  el.promptPanel.classList.toggle('hidden', !hasPrompt);
+  el.disclaimer.classList.toggle('hidden', !state.isSensitive || !state.guardrailsEnabled);
+
+  if (hasPrompt) {
+    el.promptContent.textContent = state.generatedPrompt;
+    if (state.editMode) {
+      el.promptEditor.value = state.editedPrompt || state.generatedPrompt;
+    }
+  }
+
+  el.copyBtn.disabled = !hasPrompt;
+  el.saveBtn.disabled = !hasPrompt;
+  el.exportBtn.disabled = !hasPrompt;
+
+  // Reset edit mode
+  el.editToggle.checked = false;
+  state.editMode = false;
+  el.promptContent.classList.remove('hidden');
+  el.promptEditor.classList.add('hidden');
+
+  // Update chain UI
+  renderChain();
+}
+
+// ============================================
+// CHAIN MANAGEMENT
+// ============================================
+function addToChain() {
+  if (!state.selectedRole || state.chain.includes(state.selectedRole)) return;
+  state.chain.push(state.selectedRole);
+  regeneratePrompt();
+}
+
+function removeFromChain(index) {
+  state.chain.splice(index, 1);
+  if (state.chain.length === 0 && state.selectedRole) {
+    // Keep the selected role
+  }
+  regeneratePrompt();
+}
+
+function moveInChain(index, direction) {
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= state.chain.length) return;
+  [state.chain[index], state.chain[newIndex]] = [state.chain[newIndex], state.chain[index]];
+  regeneratePrompt();
+}
+
+function renderChain() {
+  if (state.chain.length === 0) {
+    el.chainList.innerHTML = '<p class="empty-list-msg" style="padding:0;margin:0;font-size:11px;">No roles in chain yet.</p>';
+    el.chainCount.classList.add('hidden');
+  } else {
+    el.chainCount.textContent = state.chain.length;
+    el.chainCount.classList.remove('hidden');
+
+    let html = '';
+    state.chain.forEach((roleKey, i) => {
+      const role = ROLE_DATABASE[ROLE_SYNONYMS[roleKey] || roleKey];
+      const name = role?.name || roleKey.charAt(0).toUpperCase() + roleKey.slice(1);
+      html += `<div class="chain-item">
+        <span class="chain-item-order">${i + 1}</span>
+        <span class="chain-item-name">${esc(name)}</span>
+        <button class="chain-item-btn" data-action="up" data-index="${i}" title="Move up">↑</button>
+        <button class="chain-item-btn" data-action="down" data-index="${i}" title="Move down">↓</button>
+        <button class="chain-item-btn" data-action="remove" data-index="${i}" title="Remove">×</button>
+      </div>`;
+      if (i < state.chain.length - 1) {
+        html += '<div class="chain-arrow">↓</div>';
+      }
+    });
+    el.chainList.innerHTML = html;
+
+    el.chainList.querySelectorAll('.chain-item-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        if (btn.dataset.action === 'remove') removeFromChain(idx);
+        else if (btn.dataset.action === 'up') moveInChain(idx, -1);
+        else if (btn.dataset.action === 'down') moveInChain(idx, 1);
+      });
+    });
+  }
+}
+
+// ============================================
+// MODE & CONSTRAINTS
+// ============================================
+function handleModeChange() {
+  state.mode = el.modeSelect.value;
+  const preset = MODE_PRESETS[state.mode] || MODE_PRESETS.default;
+
+  el.cNoQuestions.checked = preset.noQuestions;
+  el.cNoEmojis.checked = preset.noEmojis;
+  el.cBullets.checked = preset.bullets;
+  el.cConcise.checked = preset.concise;
+  el.cStepByStep.checked = preset.stepByStep;
+  el.cRisks.checked = preset.risks;
+
+  if (state.selectedRole) regeneratePrompt();
+}
+
+function handleConstraintChange() {
+  if (state.selectedRole) regeneratePrompt();
+}
+
+// ============================================
+// COPY & EXPORT
+// ============================================
 async function handleCopy() {
-  if (!state.generatedPrompt) return;
+  const text = state.editMode ? state.editedPrompt : state.generatedPrompt;
+  if (!text) return;
+
   try {
-    await navigator.clipboard.writeText(state.generatedPrompt);
-    showCopySuccess();
+    await navigator.clipboard.writeText(text);
   } catch {
     const ta = document.createElement('textarea');
-    ta.value = state.generatedPrompt;
+    ta.value = text;
     ta.style.cssText = 'position:fixed;opacity:0';
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-    showCopySuccess();
   }
-}
 
-function showCopySuccess() {
-  elements.copyBtn.classList.add('success');
-  elements.copyBtnText.classList.add('hidden');
-  elements.copyBtnSuccess.classList.remove('hidden');
+  el.copyBtn.classList.add('success');
+  el.copyBtn.querySelector('.btn-text').classList.add('hidden');
+  el.copyBtn.querySelector('.btn-success').classList.remove('hidden');
+
   setTimeout(() => {
-    elements.copyBtn.classList.remove('success');
-    elements.copyBtnText.classList.remove('hidden');
-    elements.copyBtnSuccess.classList.add('hidden');
+    el.copyBtn.classList.remove('success');
+    el.copyBtn.querySelector('.btn-text').classList.remove('hidden');
+    el.copyBtn.querySelector('.btn-success').classList.add('hidden');
   }, 1500);
 }
 
-function esc(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function toggleExportMenu() {
+  el.exportMenu.classList.toggle('hidden');
+}
 
+function handleExport(format) {
+  const text = state.editMode ? state.editedPrompt : state.generatedPrompt;
+  if (!text) return;
+
+  let content = text;
+  let filename = `expertprompt-${state.roleNames.join('-').toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+
+  if (format === 'md') {
+    content = `# ExpertPrompt Export\n\n**Role(s):** ${state.roleNames.join(' → ')}\n\n**Generated:** ${new Date().toLocaleString()}\n\n---\n\n${text}`;
+    filename += '.md';
+  } else {
+    filename += '.txt';
+  }
+
+  const blob = new Blob([content], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  el.exportMenu.classList.add('hidden');
+}
+
+// ============================================
+// PRESETS
+// ============================================
+async function savePreset() {
+  const name = el.presetNameInput.value.trim();
+  if (!name || !state.generatedPrompt) return;
+
+  const preset = {
+    id: Date.now().toString(),
+    name,
+    roleKey: state.selectedRole,
+    roleName: state.roleNames.join(' + '),
+    chain: [...state.chain],
+    mode: state.mode,
+    constraints: {
+      noQuestions: el.cNoQuestions.checked,
+      noEmojis: el.cNoEmojis.checked,
+      bullets: el.cBullets.checked,
+      concise: el.cConcise.checked,
+      stepByStep: el.cStepByStep.checked,
+      risks: el.cRisks.checked,
+      firstOutput: el.cFirstOutput.checked
+    },
+    task: state.task,
+    context: state.context,
+    outputFormat: state.outputFormat,
+    firstOutputText: state.firstOutputText,
+    createdAt: Date.now()
+  };
+
+  state.presets.unshift(preset);
+
+  if (el.setDefaultCheckbox.checked) {
+    state.defaultPresetId = preset.id;
+  }
+
+  await Storage.set({ presets: state.presets, defaultPresetId: state.defaultPresetId });
+
+  el.saveModal.classList.add('hidden');
+  el.presetNameInput.value = '';
+  el.setDefaultCheckbox.checked = false;
+
+  renderPresets();
+}
+
+function loadPreset(preset) {
+  state.selectedRole = preset.roleKey;
+  state.chain = preset.chain || [];
+  state.mode = preset.mode || 'default';
+  state.task = preset.task || '';
+  state.context = preset.context || '';
+  state.outputFormat = preset.outputFormat || '';
+  state.firstOutputText = preset.firstOutputText || '';
+
+  el.input.value = preset.roleName;
+  el.modeSelect.value = state.mode;
+  el.taskInput.value = state.task;
+  el.contextInput.value = state.context;
+  el.outputFormatInput.value = state.outputFormat;
+  el.firstOutputInput.value = state.firstOutputText;
+
+  const c = preset.constraints || {};
+  el.cNoQuestions.checked = c.noQuestions || false;
+  el.cNoEmojis.checked = c.noEmojis || false;
+  el.cBullets.checked = c.bullets || false;
+  el.cConcise.checked = c.concise || false;
+  el.cStepByStep.checked = c.stepByStep || false;
+  el.cRisks.checked = c.risks || false;
+  el.cFirstOutput.checked = c.firstOutput || false;
+  el.firstOutputGroup.classList.toggle('hidden', !c.firstOutput);
+
+  el.addToChain.disabled = false;
+  regeneratePrompt();
+}
+
+async function deletePreset(id) {
+  state.presets = state.presets.filter(p => p.id !== id);
+  if (state.defaultPresetId === id) state.defaultPresetId = null;
+  await Storage.set({ presets: state.presets, defaultPresetId: state.defaultPresetId });
+  renderPresets();
+}
+
+async function duplicatePreset(preset) {
+  const copy = { ...preset, id: Date.now().toString(), name: preset.name + ' (copy)', createdAt: Date.now() };
+  state.presets.unshift(copy);
+  await Storage.set({ presets: state.presets });
+  renderPresets();
+}
+
+async function setDefaultPreset(id) {
+  state.defaultPresetId = state.defaultPresetId === id ? null : id;
+  await Storage.set({ defaultPresetId: state.defaultPresetId });
+  renderPresets();
+}
+
+function renderPresets() {
+  if (state.presets.length === 0) {
+    el.presetsList.innerHTML = '<p class="empty-list-msg">No saved presets yet.</p>';
+    return;
+  }
+
+  let html = '';
+  state.presets.forEach(p => {
+    const isDefault = p.id === state.defaultPresetId;
+    html += `<div class="preset-item">
+      <div class="preset-item-info">
+        <span class="preset-item-name">${esc(p.name)}${isDefault ? '<span class="preset-default-badge">Default</span>' : ''}</span>
+        <span class="preset-item-role">${esc(p.roleName)}</span>
+      </div>
+      <div class="preset-item-actions">
+        <button class="preset-item-btn" data-action="load" data-id="${p.id}" title="Load">▶</button>
+        <button class="preset-item-btn" data-action="default" data-id="${p.id}" title="Set default">★</button>
+        <button class="preset-item-btn" data-action="duplicate" data-id="${p.id}" title="Duplicate">⧉</button>
+        <button class="preset-item-btn" data-action="delete" data-id="${p.id}" title="Delete">×</button>
+      </div>
+    </div>`;
+  });
+  el.presetsList.innerHTML = html;
+
+  el.presetsList.querySelectorAll('.preset-item-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const preset = state.presets.find(p => p.id === id);
+      if (!preset) return;
+
+      switch (btn.dataset.action) {
+        case 'load': loadPreset(preset); break;
+        case 'default': setDefaultPreset(id); break;
+        case 'duplicate': duplicatePreset(preset); break;
+        case 'delete': deletePreset(id); break;
+      }
+    });
+  });
+}
+
+// ============================================
+// HISTORY
+// ============================================
+async function addToHistory() {
+  if (!state.generatedPrompt) return;
+
+  const entry = {
+    id: Date.now().toString(),
+    roleKey: state.selectedRole,
+    roleName: state.roleNames.join(' + '),
+    prompt: state.generatedPrompt,
+    timestamp: Date.now()
+  };
+
+  state.history.unshift(entry);
+  state.history = state.history.slice(0, 50); // Keep last 50
+
+  await Storage.set({ history: state.history });
+  renderHistory();
+}
+
+function loadFromHistory(entry) {
+  state.selectedRole = entry.roleKey;
+  state.generatedPrompt = entry.prompt;
+  state.roleNames = [entry.roleName];
+  el.input.value = entry.roleName;
+  el.addToChain.disabled = false;
+  updateUI();
+}
+
+async function copyFromHistory(entry) {
+  try {
+    await navigator.clipboard.writeText(entry.prompt);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = entry.prompt;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+
+function renderHistory() {
+  if (state.history.length === 0) {
+    el.historyList.innerHTML = '<p class="empty-list-msg">No prompt history yet.</p>';
+    return;
+  }
+
+  let html = '';
+  state.history.forEach(h => {
+    const time = new Date(h.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    html += `<div class="history-item">
+      <div class="history-item-info">
+        <span class="history-item-role">${esc(h.roleName)}</span>
+        <span class="history-item-time">${time}</span>
+      </div>
+      <div class="history-item-actions">
+        <button class="history-item-btn" data-action="load" data-id="${h.id}" title="Load">▶</button>
+        <button class="history-item-btn" data-action="copy" data-id="${h.id}" title="Copy">⧉</button>
+      </div>
+    </div>`;
+  });
+  el.historyList.innerHTML = html;
+
+  el.historyList.querySelectorAll('.history-item-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const entry = state.history.find(h => h.id === btn.dataset.id);
+      if (!entry) return;
+      if (btn.dataset.action === 'load') loadFromHistory(entry);
+      else if (btn.dataset.action === 'copy') copyFromHistory(entry);
+    });
+  });
+}
+
+// ============================================
+// UTILS
+// ============================================
+function esc(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+// ============================================
+// INIT
+// ============================================
 document.addEventListener('DOMContentLoaded', init);
