@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "RolePrompt",
+  "description": "A Chrome extension for managing role-based prompts",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "public/icon16.png",
+      "48": "public/icon48.png",
+      "128": "public/icon128.png"
+    }
+  },
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "icons": {
+    "16": "public/icon16.png",
+    "48": "public/icon48.png",
+    "128": "public/icon128.png"
+  }
+}
