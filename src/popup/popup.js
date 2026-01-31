@@ -4277,16 +4277,33 @@ Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
 
   prompt += `\n\nConstraints:\n${activeConstraints.map(c => `- ${c}`).join('\n')}`;
 
+  // Output format mapping
+  const OUTPUT_FORMAT_MAP = {
+    '': '',
+    'bullet': 'Use bullet points for your response',
+    'numbered': 'Use a numbered list format',
+    'paragraph': 'Write in flowing paragraph format',
+    'table': 'Present information in a table format where applicable',
+    'json': 'Structure your response as valid JSON',
+    'markdown': 'Format your response using Markdown with headers and lists',
+    'executive': 'Provide a brief executive summary (2-3 paragraphs max)',
+    'detailed': 'Provide a detailed, comprehensive analysis',
+    'comparison': 'Present a comparison with pros and cons',
+    'actionable': 'Focus only on actionable steps and recommendations'
+  };
+
   // Output format
   let outputSection = 'Response format:\n';
-  if (outputFormat) {
-    outputSection += `- ${outputFormat}\n`;
+  if (outputFormat && OUTPUT_FORMAT_MAP[outputFormat]) {
+    outputSection += `- ${OUTPUT_FORMAT_MAP[outputFormat]}\n`;
   }
   if (firstOutput) {
     outputSection += `- First output should be: ${firstOutput}\n`;
   }
   outputSection += '- Lead with the most important insight or recommendation\n';
-  outputSection += '- Use structured formatting (bullets, headers) when helpful\n';
+  if (!outputFormat || !['bullet', 'numbered', 'table', 'json'].includes(outputFormat)) {
+    outputSection += '- Use structured formatting (bullets, headers) when helpful\n';
+  }
   if (mode !== 'absolute') {
     outputSection += '- End with a suggested next step or follow-up question if appropriate';
   }
@@ -4365,6 +4382,7 @@ let state = {
   context: '',
   outputFormat: '',
   firstOutputText: '',
+  theme: 'light',
   guardrailsEnabled: true,
   editMode: false,
   editedPrompt: null,
@@ -4408,7 +4426,8 @@ async function init() {
   el.constraintsContent = document.getElementById('constraints-content');
   el.taskInput = document.getElementById('task-input');
   el.contextInput = document.getElementById('context-input');
-  el.outputFormatInput = document.getElementById('output-format-input');
+  el.outputFormatSelect = document.getElementById('output-format-select');
+  el.themeBtn = document.getElementById('theme-btn');
   el.modeSelect = document.getElementById('mode-select');
   el.firstOutputGroup = document.getElementById('first-output-group');
   el.firstOutputInput = document.getElementById('first-output-input');
@@ -4433,7 +4452,11 @@ async function init() {
   el.cFirstOutput = document.getElementById('c-first-output');
 
   // Load saved data
-  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled']);
+  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled', 'theme']);
+
+  // Apply theme
+  state.theme = saved.theme || 'light';
+  document.body.setAttribute('data-theme', state.theme);
   state.presets = saved.presets || [];
   state.history = saved.history || [];
   state.defaultPresetId = saved.defaultPresetId || null;
@@ -4480,6 +4503,13 @@ function bindEvents() {
     if (state.selectedRole) regeneratePrompt();
   });
 
+  // Theme toggle
+  el.themeBtn.addEventListener('click', async () => {
+    state.theme = state.theme === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', state.theme);
+    await Storage.set({ theme: state.theme });
+  });
+
   // Collapsible sections
   document.querySelectorAll('.section-header').forEach(header => {
     header.addEventListener('click', () => {
@@ -4508,13 +4538,16 @@ function bindEvents() {
   });
 
   // Task/Context
-  [el.taskInput, el.contextInput, el.outputFormatInput].forEach(input => {
+  [el.taskInput, el.contextInput].forEach(input => {
     input.addEventListener('input', () => {
       state.task = el.taskInput.value;
       state.context = el.contextInput.value;
-      state.outputFormat = el.outputFormatInput.value;
       if (state.selectedRole) regeneratePrompt();
     });
+  });
+  el.outputFormatSelect.addEventListener('change', () => {
+    state.outputFormat = el.outputFormatSelect.value;
+    if (state.selectedRole) regeneratePrompt();
   });
 
   // Edit toggle
@@ -4916,7 +4949,7 @@ function loadPreset(preset) {
   el.modeSelect.value = state.mode;
   el.taskInput.value = state.task;
   el.contextInput.value = state.context;
-  el.outputFormatInput.value = state.outputFormat;
+  el.outputFormatSelect.value = state.outputFormat;
   el.firstOutputInput.value = state.firstOutputText;
 
   const c = preset.constraints || {};
