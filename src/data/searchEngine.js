@@ -1,4 +1,4 @@
-// RolePrompt - Search Engine Module
+// ExpertPrompt - Search Engine Module
 // Handles fuzzy matching, synonyms, and role suggestions
 
 import { ROLE_DATABASE, ROLE_SYNONYMS, AMBIGUOUS_ROLES } from './roles.js';

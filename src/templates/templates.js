@@ -1,2 +1,2 @@
-// RolePrompt Templates
+// ExpertPrompt Templates
 // Placeholder for template definitions

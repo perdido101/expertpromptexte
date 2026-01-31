@@ -1,4 +1,4 @@
-// RolePrompt - Bundled Popup Script
+// ExpertPrompt - Bundled Popup Script
 // All modules combined for browser extension compatibility
 
 // ============================================

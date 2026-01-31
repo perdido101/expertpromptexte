@@ -1,4 +1,4 @@
-// RolePrompt - Curated Role Database
+// ExpertPrompt - Curated Role Database
 // Contains role definitions with pre-written blocks for instant prompt generation
 
 export const ROLE_DATABASE = {

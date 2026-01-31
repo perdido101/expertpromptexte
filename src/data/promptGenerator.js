@@ -1,4 +1,4 @@
-// RolePrompt - Prompt Generator Module
+// ExpertPrompt - Prompt Generator Module
 // Generates complete prompts from role definitions
 
 import { ROLE_DATABASE } from './roles.js';

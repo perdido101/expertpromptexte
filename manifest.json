@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "RolePrompt",
+  "name": "ExpertPrompt",
   "description": "Generate expert role prompts for AI chat with one click",
   "version": "1.0.0",
   "action": {

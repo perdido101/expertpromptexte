@@ -1,2 +1,2 @@
-// RolePrompt Background Service Worker
+// ExpertPrompt Background Service Worker
 // Placeholder for background functionality
