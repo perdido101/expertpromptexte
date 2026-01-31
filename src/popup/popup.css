@@ -548,12 +548,20 @@ body {
 }
 
 /* Prompt Panel */
+.prompt-section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-color), transparent);
+  margin: 16px 20px;
+}
+
 .prompt-panel {
-  margin: 0 20px 12px;
+  margin: 20px;
+  margin-top: 8px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
+  border: 1px solid #3a3a3a;
   border-radius: 12px;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 .prompt-header {
