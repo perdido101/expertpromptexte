@@ -4140,23 +4140,23 @@ const TRANSLATIONS = {
     settingsTitle: 'Ρυθμίσεις',
     language: 'Γλώσσα',
     guardrailsLabel: 'Αυτόματη προσθήκη προστασίας για ευαίσθητους ρόλους',
-    privacyNote: 'Ολα τα δεδομένα αποθηκεύονται τοπικά στον browser σας. Δεν γίνονται εξωτερικές κλήσεις δικτύου.',
+    privacyNote: 'Όλα τα δεδομένα αποθηκεύονται τοπικά στον browser σας. Δεν γίνονται εξωτερικές κλήσεις δικτύου.',
 
     // Search
     searchPlaceholder: 'Αναζήτηση ειδικού ρόλου...',
     noMatches: 'Δεν βρέθηκαν αποτελέσματα — πατήστε Enter για χρήση',
 
-    // Sections
-    roleChain: 'Αλυσίδα Ρόλων',
-    taskContext: 'Εργασία & Πλαίσιο',
-    modeConstraints: 'Λειτουργία & Περιορισμοί',
+    // Sections (displayed uppercase via CSS - no accents)
+    roleChain: 'Αλυσιδα Ρολων',
+    taskContext: 'Εργασια & Πλαισιο',
+    modeConstraints: 'Λειτουργια & Περιορισμοι',
 
-    // Task & Context fields
-    taskLabel: 'Εργασία / Στόχος',
+    // Task & Context fields (labels displayed uppercase via CSS - no accents)
+    taskLabel: 'Εργασια / Στοχος',
     taskPlaceholder: 'π.χ., Ανασκόπηση κειμένου landing page',
-    contextLabel: 'Πλαίσιο',
+    contextLabel: 'Πλαισιο',
     contextPlaceholder: 'π.χ., B2B SaaS, στοχεύοντας CTOs',
-    outputFormatLabel: 'Μορφή Εξόδου',
+    outputFormatLabel: 'Μορφη Εξοδου',
 
     // Output format options
     formatDefault: 'Προεπιλογή',
@@ -4171,8 +4171,8 @@ const TRANSLATIONS = {
     formatComparison: 'Σύγκριση/Πλεονεκτήματα & Μειονεκτήματα',
     formatActionable: 'Μόνο ενέργειες',
 
-    // Mode & Constraints
-    modeLabel: 'Λειτουργία',
+    // Mode & Constraints (label displayed uppercase via CSS - no accent)
+    modeLabel: 'Λειτουργια',
     modeDefault: 'Προεπιλογή',
     modeAbsolute: 'Απόλυτη (άμεση, χωρίς περιττά)',
     modeCollaborative: 'Συνεργατική (κάνει ερωτήσεις)',
