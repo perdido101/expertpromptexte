@@ -4050,6 +4050,305 @@ const FEATURE_FLAGS = {
 };
 
 // ============================================
+// INTERNATIONALIZATION (i18n)
+// ============================================
+const TRANSLATIONS = {
+  en: {
+    // Header
+    appTitle: 'ExpertPrompt',
+    settings: 'Settings',
+
+    // Settings panel
+    settingsTitle: 'Settings',
+    language: 'Language',
+    guardrailsLabel: 'Auto-add guardrails for sensitive roles',
+    privacyNote: 'All data is stored locally in your browser. No external network calls are made.',
+
+    // Search
+    searchPlaceholder: 'Search expert role...',
+    noMatches: 'No matches — press Enter to use anyway',
+
+    // Sections
+    roleChain: 'Role Chain',
+    taskContext: 'Task & Context',
+    modeConstraints: 'Mode & Constraints',
+
+    // Task & Context fields
+    taskLabel: 'Task / Goal',
+    taskPlaceholder: 'e.g., Review my landing page copy',
+    contextLabel: 'Context',
+    contextPlaceholder: 'e.g., B2B SaaS, targeting CTOs',
+    outputFormatLabel: 'Output Format',
+
+    // Output format options
+    formatDefault: 'Default',
+    formatBullet: 'Bullet points',
+    formatNumbered: 'Numbered list',
+    formatParagraph: 'Paragraph format',
+    formatTable: 'Table format',
+    formatJson: 'JSON structure',
+    formatMarkdown: 'Markdown',
+    formatExecutive: 'Executive summary',
+    formatDetailed: 'Detailed analysis',
+    formatComparison: 'Comparison/Pros & Cons',
+    formatActionable: 'Actionable steps only',
+
+    // Mode & Constraints
+    modeLabel: 'Mode',
+    modeDefault: 'Default',
+    modeAbsolute: 'Absolute (blunt, no fluff)',
+    modeCollaborative: 'Collaborative (asks questions)',
+    modeExecutive: 'Executive Summary',
+
+    // Constraints
+    noQuestions: 'No questions',
+    noEmojis: 'No emojis',
+    bulletPoints: 'Bullet points',
+    ultraConcise: 'Ultra concise',
+    stepByStep: 'Step-by-step',
+    includeRisks: 'Include risks',
+    specifyFirstOutput: 'Specify first output',
+    firstOutputPlaceholder: 'e.g., Start with a summary',
+
+    // Chain
+    addSelectedRole: '+ Add selected role',
+    noRolesInChain: 'No roles in chain yet.',
+
+    // Guardrails notice
+    guardrailNotice: 'Guardrail added: informational-only disclaimer included.',
+
+    // Prompt panel
+    generatedPrompt: 'Generated Prompt',
+    edit: 'Edit',
+
+    // Empty state
+    emptyStateText: 'Search and select a role to generate your prompt.',
+
+    // Actions
+    copy: 'Copy',
+    copied: 'Copied!',
+    save: 'Save',
+    export: 'Export',
+    exportTxt: 'Export as .txt',
+    exportMd: 'Export as .md',
+
+    // Tabs
+    presets: 'Presets',
+    history: 'History',
+
+    // Presets
+    noPresetsYet: 'No saved presets yet.',
+    noHistoryYet: 'No prompt history yet.',
+
+    // Save modal
+    savePreset: 'Save Preset',
+    presetName: 'Preset Name',
+    presetNamePlaceholder: 'e.g., My Marketing Setup',
+    setAsDefault: 'Set as default',
+    cancel: 'Cancel'
+  },
+  el: {
+    // Header
+    appTitle: 'ExpertPrompt',
+    settings: 'Ρυθμίσεις',
+
+    // Settings panel
+    settingsTitle: 'Ρυθμίσεις',
+    language: 'Γλώσσα',
+    guardrailsLabel: 'Αυτόματη προσθήκη προστασίας για ευαίσθητους ρόλους',
+    privacyNote: 'Όλα τα δεδομένα αποθηκεύονται τοπικά στον browser σας. Δεν γίνονται εξωτερικές κλήσεις δικτύου.',
+
+    // Search
+    searchPlaceholder: 'Αναζήτηση ειδικού ρόλου...',
+    noMatches: 'Δεν βρέθηκαν αποτελέσματα — πατήστε Enter για χρήση',
+
+    // Sections
+    roleChain: 'Αλυσίδα Ρόλων',
+    taskContext: 'Εργασία & Πλαίσιο',
+    modeConstraints: 'Λειτουργία & Περιορισμοί',
+
+    // Task & Context fields
+    taskLabel: 'Εργασία / Στόχος',
+    taskPlaceholder: 'π.χ., Ανασκόπηση κειμένου landing page',
+    contextLabel: 'Πλαίσιο',
+    contextPlaceholder: 'π.χ., B2B SaaS, στοχεύοντας CTOs',
+    outputFormatLabel: 'Μορφή Εξόδου',
+
+    // Output format options
+    formatDefault: 'Προεπιλογή',
+    formatBullet: 'Κουκκίδες',
+    formatNumbered: 'Αριθμημένη λίστα',
+    formatParagraph: 'Μορφή παραγράφου',
+    formatTable: 'Μορφή πίνακα',
+    formatJson: 'Δομή JSON',
+    formatMarkdown: 'Markdown',
+    formatExecutive: 'Εκτελεστική περίληψη',
+    formatDetailed: 'Λεπτομερής ανάλυση',
+    formatComparison: 'Σύγκριση/Πλεονεκτήματα & Μειονεκτήματα',
+    formatActionable: 'Μόνο ενέργειες',
+
+    // Mode & Constraints
+    modeLabel: 'Λειτουργία',
+    modeDefault: 'Προεπιλογή',
+    modeAbsolute: 'Απόλυτη (άμεση, χωρίς περιττά)',
+    modeCollaborative: 'Συνεργατική (κάνει ερωτήσεις)',
+    modeExecutive: 'Εκτελεστική Περίληψη',
+
+    // Constraints
+    noQuestions: 'Χωρίς ερωτήσεις',
+    noEmojis: 'Χωρίς emojis',
+    bulletPoints: 'Κουκκίδες',
+    ultraConcise: 'Πολύ συνοπτικό',
+    stepByStep: 'Βήμα-βήμα',
+    includeRisks: 'Συμπ. κινδύνους',
+    specifyFirstOutput: 'Καθορισμός πρώτης εξόδου',
+    firstOutputPlaceholder: 'π.χ., Ξεκινήστε με περίληψη',
+
+    // Chain
+    addSelectedRole: '+ Προσθήκη επιλεγμένου ρόλου',
+    noRolesInChain: 'Δεν υπάρχουν ρόλοι στην αλυσίδα.',
+
+    // Guardrails notice
+    guardrailNotice: 'Προστασία: συμπεριλήφθηκε δήλωση αποποίησης ευθυνών.',
+
+    // Prompt panel
+    generatedPrompt: 'Παραγόμενο Prompt',
+    edit: 'Επεξεργασία',
+
+    // Empty state
+    emptyStateText: 'Αναζητήστε και επιλέξτε έναν ρόλο για να δημιουργήσετε το prompt σας.',
+
+    // Actions
+    copy: 'Αντιγραφή',
+    copied: 'Αντιγράφηκε!',
+    save: 'Αποθήκευση',
+    export: 'Εξαγωγή',
+    exportTxt: 'Εξαγωγή ως .txt',
+    exportMd: 'Εξαγωγή ως .md',
+
+    // Tabs
+    presets: 'Προρυθμίσεις',
+    history: 'Ιστορικό',
+
+    // Presets
+    noPresetsYet: 'Δεν υπάρχουν αποθηκευμένες προρυθμίσεις.',
+    noHistoryYet: 'Δεν υπάρχει ιστορικό prompt.',
+
+    // Save modal
+    savePreset: 'Αποθήκευση Προρύθμισης',
+    presetName: 'Όνομα Προρύθμισης',
+    presetNamePlaceholder: 'π.χ., Ρύθμιση Marketing',
+    setAsDefault: 'Ορισμός ως προεπιλογή',
+    cancel: 'Ακύρωση'
+  }
+};
+
+let currentLanguage = 'en';
+
+function t(key) {
+  return TRANSLATIONS[currentLanguage]?.[key] || TRANSLATIONS['en'][key] || key;
+}
+
+function applyTranslations() {
+  // Header
+  document.querySelector('.header-title').textContent = t('appTitle');
+  document.getElementById('settings-btn').title = t('settings');
+
+  // Settings panel
+  document.querySelector('.settings-header span').textContent = t('settingsTitle');
+  document.querySelector('#guardrails-toggle').parentElement.querySelector('span:first-child').textContent = t('guardrailsLabel');
+  document.querySelector('.settings-note').textContent = t('privacyNote');
+  document.querySelector('label[for="language-select"] span').textContent = t('language');
+
+  // Search
+  document.getElementById('role-input').placeholder = t('searchPlaceholder');
+
+  // Sections
+  document.querySelector('[data-toggle="chain-content"]').querySelector('span:first-child').textContent = t('roleChain');
+  document.querySelector('[data-toggle="context-content"]').querySelector('span:first-child').textContent = t('taskContext');
+  document.querySelector('[data-toggle="constraints-content"]').querySelector('span:first-child').textContent = t('modeConstraints');
+
+  // Task & Context
+  document.querySelector('label[for="task-input"]').textContent = t('taskLabel');
+  document.getElementById('task-input').placeholder = t('taskPlaceholder');
+  document.querySelector('label[for="context-input"]').textContent = t('contextLabel');
+  document.getElementById('context-input').placeholder = t('contextPlaceholder');
+  document.querySelector('label[for="output-format-select"]').textContent = t('outputFormatLabel');
+
+  // Output format options
+  const formatSelect = document.getElementById('output-format-select');
+  formatSelect.options[0].textContent = t('formatDefault');
+  formatSelect.options[1].textContent = t('formatBullet');
+  formatSelect.options[2].textContent = t('formatNumbered');
+  formatSelect.options[3].textContent = t('formatParagraph');
+  formatSelect.options[4].textContent = t('formatTable');
+  formatSelect.options[5].textContent = t('formatJson');
+  formatSelect.options[6].textContent = t('formatMarkdown');
+  formatSelect.options[7].textContent = t('formatExecutive');
+  formatSelect.options[8].textContent = t('formatDetailed');
+  formatSelect.options[9].textContent = t('formatComparison');
+  formatSelect.options[10].textContent = t('formatActionable');
+
+  // Mode & Constraints
+  document.querySelector('label[for="mode-select"]').textContent = t('modeLabel');
+  const modeSelect = document.getElementById('mode-select');
+  modeSelect.options[0].textContent = t('modeDefault');
+  modeSelect.options[1].textContent = t('modeAbsolute');
+  modeSelect.options[2].textContent = t('modeCollaborative');
+  modeSelect.options[3].textContent = t('modeExecutive');
+
+  // Constraints
+  document.querySelector('#c-no-questions').parentElement.querySelector('span').textContent = t('noQuestions');
+  document.querySelector('#c-no-emojis').parentElement.querySelector('span').textContent = t('noEmojis');
+  document.querySelector('#c-bullets').parentElement.querySelector('span').textContent = t('bulletPoints');
+  document.querySelector('#c-concise').parentElement.querySelector('span').textContent = t('ultraConcise');
+  document.querySelector('#c-stepbystep').parentElement.querySelector('span').textContent = t('stepByStep');
+  document.querySelector('#c-risks').parentElement.querySelector('span').textContent = t('includeRisks');
+  document.querySelector('#c-first-output').parentElement.querySelector('span').textContent = t('specifyFirstOutput');
+  document.getElementById('first-output-input').placeholder = t('firstOutputPlaceholder');
+
+  // Chain
+  document.getElementById('add-to-chain').textContent = t('addSelectedRole');
+
+  // Guardrails notice
+  document.querySelector('#sensitive-disclaimer span').textContent = t('guardrailNotice');
+
+  // Prompt panel
+  document.querySelector('.prompt-header span').textContent = t('generatedPrompt');
+  document.querySelector('#edit-toggle').parentElement.querySelector('span').textContent = t('edit');
+
+  // Empty state
+  document.querySelector('.helper-text').textContent = t('emptyStateText');
+
+  // Actions
+  document.querySelector('#copy-btn .btn-text').textContent = t('copy');
+  document.querySelector('#copy-btn .btn-success').textContent = t('copied');
+  document.getElementById('save-preset-btn').textContent = t('save');
+  document.getElementById('export-btn').textContent = t('export');
+
+  // Export menu
+  document.querySelector('#export-menu [data-format="txt"]').textContent = t('exportTxt');
+  document.querySelector('#export-menu [data-format="md"]').textContent = t('exportMd');
+
+  // Tabs
+  document.querySelector('[data-tab="presets"]').textContent = t('presets');
+  document.querySelector('[data-tab="history"]').textContent = t('history');
+
+  // Save modal
+  document.querySelector('#save-modal .modal-header span').textContent = t('savePreset');
+  document.querySelector('label[for="preset-name-input"]').textContent = t('presetName');
+  document.getElementById('preset-name-input').placeholder = t('presetNamePlaceholder');
+  document.querySelector('#set-default-checkbox').parentElement.querySelector('span').textContent = t('setAsDefault');
+  document.getElementById('cancel-save').textContent = t('cancel');
+  document.getElementById('confirm-save').textContent = t('save');
+
+  // Re-render dynamic content
+  if (typeof renderPresets === 'function') renderPresets();
+  if (typeof renderHistory === 'function') renderHistory();
+  if (typeof renderChain === 'function') renderChain();
+}
+
+// ============================================
 // SEARCH ENGINE
 // ============================================
 function levenshteinDistance(a, b) {
@@ -4449,13 +4748,21 @@ async function init() {
   el.cRisks = document.getElementById('c-risks');
   el.cFirstOutput = document.getElementById('c-first-output');
 
+  // Language selector
+  el.languageSelect = document.getElementById('language-select');
+
   // Load saved data
-  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled']);
+  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled', 'language']);
   state.presets = saved.presets || [];
   state.history = saved.history || [];
   state.defaultPresetId = saved.defaultPresetId || null;
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
+
+  // Load language preference
+  currentLanguage = saved.language || 'en';
+  el.languageSelect.value = currentLanguage;
+  applyTranslations();
 
   // Bind events
   bindEvents();
@@ -4495,6 +4802,13 @@ function bindEvents() {
     state.guardrailsEnabled = el.guardrailsToggle.checked;
     await Storage.set({ guardrailsEnabled: state.guardrailsEnabled });
     if (state.selectedRole) regeneratePrompt();
+  });
+
+  // Language selector
+  el.languageSelect.addEventListener('change', async () => {
+    currentLanguage = el.languageSelect.value;
+    await Storage.set({ language: currentLanguage });
+    applyTranslations();
   });
 
   // Collapsible sections
@@ -4637,7 +4951,7 @@ function handleOutsideClick(e) {
 
 function renderSuggestions() {
   if (state.suggestions.length === 0) {
-    el.suggestions.innerHTML = '<div class="suggestion-no-results">No matches — press Enter to use anyway</div>';
+    el.suggestions.innerHTML = `<div class="suggestion-no-results">${t('noMatches')}</div>`;
     el.suggestions.classList.remove('hidden');
     return;
   }
@@ -4764,7 +5078,7 @@ function moveInChain(index, direction) {
 
 function renderChain() {
   if (state.chain.length === 0) {
-    el.chainList.innerHTML = '<p class="empty-list-msg" style="padding:0;margin:0;font-size:11px;">No roles in chain yet.</p>';
+    el.chainList.innerHTML = `<p class="empty-list-msg" style="padding:0;margin:0;font-size:11px;">${t('noRolesInChain')}</p>`;
     el.chainCount.classList.add('hidden');
   } else {
     el.chainCount.textContent = state.chain.length;
@@ -4975,7 +5289,7 @@ async function setDefaultPreset(id) {
 
 function renderPresets() {
   if (state.presets.length === 0) {
-    el.presetsList.innerHTML = '<p class="empty-list-msg">No saved presets yet.</p>';
+    el.presetsList.innerHTML = `<p class="empty-list-msg">${t('noPresetsYet')}</p>`;
     return;
   }
 
@@ -5059,7 +5373,7 @@ async function copyFromHistory(entry) {
 
 function renderHistory() {
   if (state.history.length === 0) {
-    el.historyList.innerHTML = '<p class="empty-list-msg">No prompt history yet.</p>';
+    el.historyList.innerHTML = `<p class="empty-list-msg">${t('noHistoryYet')}</p>`;
     return;
   }
 
