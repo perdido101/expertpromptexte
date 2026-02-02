@@ -4127,25 +4127,9 @@ const TRANSLATIONS = {
     // Actions
     copy: 'Copy',
     copied: 'Copied!',
-    save: 'Save',
     export: 'Export',
     exportTxt: 'Export as .txt',
-    exportMd: 'Export as .md',
-
-    // Tabs
-    presets: 'Presets',
-    history: 'History',
-
-    // Presets
-    noPresetsYet: 'No saved presets yet.',
-    noHistoryYet: 'No prompt history yet.',
-
-    // Save modal
-    savePreset: 'Save Preset',
-    presetName: 'Preset Name',
-    presetNamePlaceholder: 'e.g., My Marketing Setup',
-    setAsDefault: 'Set as default',
-    cancel: 'Cancel'
+    exportMd: 'Export as .md'
   },
   el: {
     // Header
@@ -4221,25 +4205,9 @@ const TRANSLATIONS = {
     // Actions
     copy: 'Αντιγραφή',
     copied: 'Αντιγράφηκε!',
-    save: 'Αποθήκευση',
     export: 'Εξαγωγή',
     exportTxt: 'Εξαγωγή ως .txt',
-    exportMd: 'Εξαγωγή ως .md',
-
-    // Tabs
-    presets: 'Προρυθμίσεις',
-    history: 'Ιστορικό',
-
-    // Presets
-    noPresetsYet: 'Δεν υπάρχουν αποθηκευμένες προρυθμίσεις.',
-    noHistoryYet: 'Δεν υπάρχει ιστορικό prompt.',
-
-    // Save modal
-    savePreset: 'Αποθήκευση Προρύθμισης',
-    presetName: 'Όνομα Προρύθμισης',
-    presetNamePlaceholder: 'π.χ., Ρύθμιση Marketing',
-    setAsDefault: 'Ορισμός ως προεπιλογή',
-    cancel: 'Ακύρωση'
+    exportMd: 'Εξαγωγή ως .md'
   }
 };
 
@@ -4323,28 +4291,13 @@ function applyTranslations() {
   // Actions
   document.querySelector('#copy-btn .btn-text').textContent = t('copy');
   document.querySelector('#copy-btn .btn-success').textContent = t('copied');
-  document.getElementById('save-preset-btn').textContent = t('save');
   document.getElementById('export-btn').textContent = t('export');
 
   // Export menu
   document.querySelector('#export-menu [data-format="txt"]').textContent = t('exportTxt');
   document.querySelector('#export-menu [data-format="md"]').textContent = t('exportMd');
 
-  // Tabs
-  document.querySelector('[data-tab="presets"]').textContent = t('presets');
-  document.querySelector('[data-tab="history"]').textContent = t('history');
-
-  // Save modal
-  document.querySelector('#save-modal .modal-header span').textContent = t('savePreset');
-  document.querySelector('label[for="preset-name-input"]').textContent = t('presetName');
-  document.getElementById('preset-name-input').placeholder = t('presetNamePlaceholder');
-  document.querySelector('#set-default-checkbox').parentElement.querySelector('span').textContent = t('setAsDefault');
-  document.getElementById('cancel-save').textContent = t('cancel');
-  document.getElementById('confirm-save').textContent = t('save');
-
   // Re-render dynamic content
-  if (typeof renderPresets === 'function') renderPresets();
-  if (typeof renderHistory === 'function') renderHistory();
   if (typeof renderChain === 'function') renderChain();
 }
 
@@ -4673,7 +4626,6 @@ let state = {
   generatedPrompt: null,
   isSensitive: false,
   roleNames: [],
-  // New state
   chain: [],
   mode: 'default',
   constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
@@ -4683,11 +4635,7 @@ let state = {
   firstOutputText: '',
   guardrailsEnabled: true,
   editMode: false,
-  editedPrompt: null,
-  presets: [],
-  history: [],
-  defaultPresetId: null,
-  activeTab: 'presets'
+  editedPrompt: null
 };
 
 const el = {};
@@ -4708,7 +4656,6 @@ async function init() {
   el.promptEditor = document.getElementById('prompt-editor');
   el.editToggle = document.getElementById('edit-toggle');
   el.copyBtn = document.getElementById('copy-btn');
-  el.saveBtn = document.getElementById('save-preset-btn');
   el.exportBtn = document.getElementById('export-btn');
   el.exportMenu = document.getElementById('export-menu');
   el.settingsBtn = document.getElementById('settings-btn');
@@ -4728,16 +4675,6 @@ async function init() {
   el.modeSelect = document.getElementById('mode-select');
   el.firstOutputGroup = document.getElementById('first-output-group');
   el.firstOutputInput = document.getElementById('first-output-input');
-  el.presetsTab = document.getElementById('presets-tab');
-  el.historyTab = document.getElementById('history-tab');
-  el.presetsList = document.getElementById('presets-list');
-  el.historyList = document.getElementById('history-list');
-  el.saveModal = document.getElementById('save-modal');
-  el.presetNameInput = document.getElementById('preset-name-input');
-  el.setDefaultCheckbox = document.getElementById('set-default-checkbox');
-  el.confirmSave = document.getElementById('confirm-save');
-  el.cancelSave = document.getElementById('cancel-save');
-  el.closeModal = document.getElementById('close-modal');
 
   // Constraint checkboxes
   el.cNoQuestions = document.getElementById('c-no-questions');
@@ -4752,10 +4689,7 @@ async function init() {
   el.languageSelect = document.getElementById('language-select');
 
   // Load saved data
-  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled', 'language']);
-  state.presets = saved.presets || [];
-  state.history = saved.history || [];
-  state.defaultPresetId = saved.defaultPresetId || null;
+  const saved = await Storage.get(['guardrailsEnabled', 'language']);
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
 
@@ -4766,16 +4700,6 @@ async function init() {
 
   // Bind events
   bindEvents();
-
-  // Render initial state
-  renderPresets();
-  renderHistory();
-
-  // Load default preset if exists
-  if (state.defaultPresetId) {
-    const defaultPreset = state.presets.find(p => p.id === state.defaultPresetId);
-    if (defaultPreset) loadPreset(defaultPreset);
-  }
 
   el.input.focus();
 }
@@ -4789,7 +4713,6 @@ function bindEvents() {
 
   // Actions
   el.copyBtn.addEventListener('click', handleCopy);
-  el.saveBtn.addEventListener('click', () => el.saveModal.classList.remove('hidden'));
   el.exportBtn.addEventListener('click', toggleExportMenu);
   el.exportMenu.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => handleExport(btn.dataset.format));
@@ -4866,22 +4789,6 @@ function bindEvents() {
   el.promptEditor.addEventListener('input', () => {
     state.editedPrompt = el.promptEditor.value;
   });
-
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.activeTab = btn.dataset.tab;
-      el.presetsTab.classList.toggle('hidden', state.activeTab !== 'presets');
-      el.historyTab.classList.toggle('hidden', state.activeTab !== 'history');
-    });
-  });
-
-  // Modal
-  el.confirmSave.addEventListener('click', savePreset);
-  el.cancelSave.addEventListener('click', () => el.saveModal.classList.add('hidden'));
-  el.closeModal.addEventListener('click', () => el.saveModal.classList.add('hidden'));
 }
 
 // ============================================
@@ -4994,7 +4901,6 @@ function selectRole(key) {
   hideSuggestions();
   el.addToChain.disabled = false;
   regeneratePrompt();
-  addToHistory();
 }
 
 function regeneratePrompt() {
@@ -5039,7 +4945,6 @@ function updateUI() {
   }
 
   el.copyBtn.disabled = !hasPrompt;
-  el.saveBtn.disabled = !hasPrompt;
   el.exportBtn.disabled = !hasPrompt;
 
   // Reset edit mode
@@ -5190,217 +5095,6 @@ function handleExport(format) {
   URL.revokeObjectURL(url);
 
   el.exportMenu.classList.add('hidden');
-}
-
-// ============================================
-// PRESETS
-// ============================================
-async function savePreset() {
-  const name = el.presetNameInput.value.trim();
-  if (!name || !state.generatedPrompt) return;
-
-  const preset = {
-    id: Date.now().toString(),
-    name,
-    roleKey: state.selectedRole,
-    roleName: state.roleNames.join(' + '),
-    chain: [...state.chain],
-    mode: state.mode,
-    constraints: {
-      noQuestions: el.cNoQuestions.checked,
-      noEmojis: el.cNoEmojis.checked,
-      bullets: el.cBullets.checked,
-      concise: el.cConcise.checked,
-      stepByStep: el.cStepByStep.checked,
-      risks: el.cRisks.checked,
-      firstOutput: el.cFirstOutput.checked
-    },
-    task: state.task,
-    context: state.context,
-    outputFormat: state.outputFormat,
-    firstOutputText: state.firstOutputText,
-    createdAt: Date.now()
-  };
-
-  state.presets.unshift(preset);
-
-  if (el.setDefaultCheckbox.checked) {
-    state.defaultPresetId = preset.id;
-  }
-
-  await Storage.set({ presets: state.presets, defaultPresetId: state.defaultPresetId });
-
-  el.saveModal.classList.add('hidden');
-  el.presetNameInput.value = '';
-  el.setDefaultCheckbox.checked = false;
-
-  renderPresets();
-}
-
-function loadPreset(preset) {
-  state.selectedRole = preset.roleKey;
-  state.chain = preset.chain || [];
-  state.mode = preset.mode || 'default';
-  state.task = preset.task || '';
-  state.context = preset.context || '';
-  state.outputFormat = preset.outputFormat || '';
-  state.firstOutputText = preset.firstOutputText || '';
-
-  el.input.value = preset.roleName;
-  el.modeSelect.value = state.mode;
-  el.taskInput.value = state.task;
-  el.contextInput.value = state.context;
-  el.outputFormatSelect.value = state.outputFormat;
-  el.firstOutputInput.value = state.firstOutputText;
-
-  const c = preset.constraints || {};
-  el.cNoQuestions.checked = c.noQuestions || false;
-  el.cNoEmojis.checked = c.noEmojis || false;
-  el.cBullets.checked = c.bullets || false;
-  el.cConcise.checked = c.concise || false;
-  el.cStepByStep.checked = c.stepByStep || false;
-  el.cRisks.checked = c.risks || false;
-  el.cFirstOutput.checked = c.firstOutput || false;
-  el.firstOutputGroup.classList.toggle('hidden', !c.firstOutput);
-
-  el.addToChain.disabled = false;
-  regeneratePrompt();
-}
-
-async function deletePreset(id) {
-  state.presets = state.presets.filter(p => p.id !== id);
-  if (state.defaultPresetId === id) state.defaultPresetId = null;
-  await Storage.set({ presets: state.presets, defaultPresetId: state.defaultPresetId });
-  renderPresets();
-}
-
-async function duplicatePreset(preset) {
-  const copy = { ...preset, id: Date.now().toString(), name: preset.name + ' (copy)', createdAt: Date.now() };
-  state.presets.unshift(copy);
-  await Storage.set({ presets: state.presets });
-  renderPresets();
-}
-
-async function setDefaultPreset(id) {
-  state.defaultPresetId = state.defaultPresetId === id ? null : id;
-  await Storage.set({ defaultPresetId: state.defaultPresetId });
-  renderPresets();
-}
-
-function renderPresets() {
-  if (state.presets.length === 0) {
-    el.presetsList.innerHTML = `<p class="empty-list-msg">${t('noPresetsYet')}</p>`;
-    return;
-  }
-
-  let html = '';
-  state.presets.forEach(p => {
-    const isDefault = p.id === state.defaultPresetId;
-    html += `<div class="preset-item">
-      <div class="preset-item-info">
-        <span class="preset-item-name">${esc(p.name)}${isDefault ? '<span class="preset-default-badge">Default</span>' : ''}</span>
-        <span class="preset-item-role">${esc(p.roleName)}</span>
-      </div>
-      <div class="preset-item-actions">
-        <button class="preset-item-btn" data-action="load" data-id="${p.id}" title="Load">▶</button>
-        <button class="preset-item-btn" data-action="default" data-id="${p.id}" title="Set default">★</button>
-        <button class="preset-item-btn" data-action="duplicate" data-id="${p.id}" title="Duplicate">⧉</button>
-        <button class="preset-item-btn" data-action="delete" data-id="${p.id}" title="Delete">×</button>
-      </div>
-    </div>`;
-  });
-  el.presetsList.innerHTML = html;
-
-  el.presetsList.querySelectorAll('.preset-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.id;
-      const preset = state.presets.find(p => p.id === id);
-      if (!preset) return;
-
-      switch (btn.dataset.action) {
-        case 'load': loadPreset(preset); break;
-        case 'default': setDefaultPreset(id); break;
-        case 'duplicate': duplicatePreset(preset); break;
-        case 'delete': deletePreset(id); break;
-      }
-    });
-  });
-}
-
-// ============================================
-// HISTORY
-// ============================================
-async function addToHistory() {
-  if (!state.generatedPrompt) return;
-
-  const entry = {
-    id: Date.now().toString(),
-    roleKey: state.selectedRole,
-    roleName: state.roleNames.join(' + '),
-    prompt: state.generatedPrompt,
-    timestamp: Date.now()
-  };
-
-  state.history.unshift(entry);
-  state.history = state.history.slice(0, 50); // Keep last 50
-
-  await Storage.set({ history: state.history });
-  renderHistory();
-}
-
-function loadFromHistory(entry) {
-  state.selectedRole = entry.roleKey;
-  state.generatedPrompt = entry.prompt;
-  state.roleNames = [entry.roleName];
-  el.input.value = entry.roleName;
-  el.addToChain.disabled = false;
-  updateUI();
-}
-
-async function copyFromHistory(entry) {
-  try {
-    await navigator.clipboard.writeText(entry.prompt);
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = entry.prompt;
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-}
-
-function renderHistory() {
-  if (state.history.length === 0) {
-    el.historyList.innerHTML = `<p class="empty-list-msg">${t('noHistoryYet')}</p>`;
-    return;
-  }
-
-  let html = '';
-  state.history.forEach(h => {
-    const time = new Date(h.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    html += `<div class="history-item">
-      <div class="history-item-info">
-        <span class="history-item-role">${esc(h.roleName)}</span>
-        <span class="history-item-time">${time}</span>
-      </div>
-      <div class="history-item-actions">
-        <button class="history-item-btn" data-action="load" data-id="${h.id}" title="Load">▶</button>
-        <button class="history-item-btn" data-action="copy" data-id="${h.id}" title="Copy">⧉</button>
-      </div>
-    </div>`;
-  });
-  el.historyList.innerHTML = html;
-
-  el.historyList.querySelectorAll('.history-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const entry = state.history.find(h => h.id === btn.dataset.id);
-      if (!entry) return;
-      if (btn.dataset.action === 'load') loadFromHistory(entry);
-      else if (btn.dataset.action === 'copy') copyFromHistory(entry);
-    });
-  });
 }
 
 // ============================================
