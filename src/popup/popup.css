@@ -505,6 +505,38 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0a0a0' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
 }
 
+/* Inline field group for settings */
+.field-group-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.field-select-sm {
+  width: auto;
+  min-width: 100px;
+  padding: 6px 28px 6px 10px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a0a0a0' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  transition: all 0.15s;
+}
+
+.field-select-sm:focus {
+  background: var(--bg-primary);
+  border-color: var(--accent);
+  outline: none;
+}
+
 /* Constraints Grid */
 .constraints-grid {
   display: grid;

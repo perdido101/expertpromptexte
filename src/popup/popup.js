@@ -4050,6 +4050,258 @@ const FEATURE_FLAGS = {
 };
 
 // ============================================
+// INTERNATIONALIZATION (i18n)
+// ============================================
+const TRANSLATIONS = {
+  en: {
+    // Header
+    appTitle: 'ExpertPrompt',
+    settings: 'Settings',
+
+    // Settings panel
+    settingsTitle: 'Settings',
+    language: 'Language',
+    guardrailsLabel: 'Auto-add guardrails for sensitive roles',
+    privacyNote: 'All data is stored locally in your browser. No external network calls are made.',
+
+    // Search
+    searchPlaceholder: 'Search expert role...',
+    noMatches: 'No matches — press Enter to use anyway',
+
+    // Sections
+    roleChain: 'Role Chain',
+    taskContext: 'Task & Context',
+    modeConstraints: 'Mode & Constraints',
+
+    // Task & Context fields
+    taskLabel: 'Task / Goal',
+    taskPlaceholder: 'e.g., Review my landing page copy',
+    contextLabel: 'Context',
+    contextPlaceholder: 'e.g., B2B SaaS, targeting CTOs',
+    outputFormatLabel: 'Output Format',
+
+    // Output format options
+    formatDefault: 'Default',
+    formatBullet: 'Bullet points',
+    formatNumbered: 'Numbered list',
+    formatParagraph: 'Paragraph format',
+    formatTable: 'Table format',
+    formatJson: 'JSON structure',
+    formatMarkdown: 'Markdown',
+    formatExecutive: 'Executive summary',
+    formatDetailed: 'Detailed analysis',
+    formatComparison: 'Comparison/Pros & Cons',
+    formatActionable: 'Actionable steps only',
+
+    // Mode & Constraints
+    modeLabel: 'Mode',
+    modeDefault: 'Default',
+    modeAbsolute: 'Absolute (blunt, no fluff)',
+    modeCollaborative: 'Collaborative (asks questions)',
+    modeExecutive: 'Executive Summary',
+
+    // Constraints
+    noQuestions: 'No questions',
+    noEmojis: 'No emojis',
+    bulletPoints: 'Bullet points',
+    ultraConcise: 'Ultra concise',
+    stepByStep: 'Step-by-step',
+    includeRisks: 'Include risks',
+    specifyFirstOutput: 'Specify first output',
+    firstOutputPlaceholder: 'e.g., Start with a summary',
+
+    // Chain
+    addSelectedRole: '+ Add selected role',
+    noRolesInChain: 'No roles in chain yet.',
+
+    // Guardrails notice
+    guardrailNotice: 'Guardrail added: informational-only disclaimer included.',
+
+    // Prompt panel
+    generatedPrompt: 'Generated Prompt',
+    edit: 'Edit',
+
+    // Empty state
+    emptyStateText: 'Search and select a role to generate your prompt.',
+
+    // Actions
+    copy: 'Copy',
+    copied: 'Copied!',
+    export: 'Export',
+    exportTxt: 'Export as .txt',
+    exportMd: 'Export as .md'
+  },
+  el: {
+    // Header
+    appTitle: 'ExpertPrompt',
+    settings: 'Ρυθμίσεις',
+
+    // Settings panel
+    settingsTitle: 'Ρυθμίσεις',
+    language: 'Γλώσσα',
+    guardrailsLabel: 'Αυτόματη προσθήκη προστασίας για ευαίσθητους ρόλους',
+    privacyNote: 'Όλα τα δεδομένα αποθηκεύονται τοπικά στον browser σας. Δεν γίνονται εξωτερικές κλήσεις δικτύου.',
+
+    // Search
+    searchPlaceholder: 'Αναζήτηση ειδικού ρόλου...',
+    noMatches: 'Δεν βρέθηκαν αποτελέσματα — πατήστε Enter για χρήση',
+
+    // Sections
+    roleChain: 'Αλυσίδα Ρόλων',
+    taskContext: 'Εργασία & Πλαίσιο',
+    modeConstraints: 'Λειτουργία & Περιορισμοί',
+
+    // Task & Context fields
+    taskLabel: 'Εργασία / Στόχος',
+    taskPlaceholder: 'π.χ., Ανασκόπηση κειμένου landing page',
+    contextLabel: 'Πλαίσιο',
+    contextPlaceholder: 'π.χ., B2B SaaS, στοχεύοντας CTOs',
+    outputFormatLabel: 'Μορφή Εξόδου',
+
+    // Output format options
+    formatDefault: 'Προεπιλογή',
+    formatBullet: 'Κουκκίδες',
+    formatNumbered: 'Αριθμημένη λίστα',
+    formatParagraph: 'Μορφή παραγράφου',
+    formatTable: 'Μορφή πίνακα',
+    formatJson: 'Δομή JSON',
+    formatMarkdown: 'Markdown',
+    formatExecutive: 'Εκτελεστική περίληψη',
+    formatDetailed: 'Λεπτομερής ανάλυση',
+    formatComparison: 'Σύγκριση/Πλεονεκτήματα & Μειονεκτήματα',
+    formatActionable: 'Μόνο ενέργειες',
+
+    // Mode & Constraints
+    modeLabel: 'Λειτουργία',
+    modeDefault: 'Προεπιλογή',
+    modeAbsolute: 'Απόλυτη (άμεση, χωρίς περιττά)',
+    modeCollaborative: 'Συνεργατική (κάνει ερωτήσεις)',
+    modeExecutive: 'Εκτελεστική Περίληψη',
+
+    // Constraints
+    noQuestions: 'Χωρίς ερωτήσεις',
+    noEmojis: 'Χωρίς emojis',
+    bulletPoints: 'Κουκκίδες',
+    ultraConcise: 'Πολύ συνοπτικό',
+    stepByStep: 'Βήμα-βήμα',
+    includeRisks: 'Συμπ. κινδύνους',
+    specifyFirstOutput: 'Καθορισμός πρώτης εξόδου',
+    firstOutputPlaceholder: 'π.χ., Ξεκινήστε με περίληψη',
+
+    // Chain
+    addSelectedRole: '+ Προσθήκη επιλεγμένου ρόλου',
+    noRolesInChain: 'Δεν υπάρχουν ρόλοι στην αλυσίδα.',
+
+    // Guardrails notice
+    guardrailNotice: 'Προστασία: συμπεριλήφθηκε δήλωση αποποίησης ευθυνών.',
+
+    // Prompt panel
+    generatedPrompt: 'Παραγόμενο Prompt',
+    edit: 'Επεξεργασία',
+
+    // Empty state
+    emptyStateText: 'Αναζητήστε και επιλέξτε έναν ρόλο για να δημιουργήσετε το prompt σας.',
+
+    // Actions
+    copy: 'Αντιγραφή',
+    copied: 'Αντιγράφηκε!',
+    export: 'Εξαγωγή',
+    exportTxt: 'Εξαγωγή ως .txt',
+    exportMd: 'Εξαγωγή ως .md'
+  }
+};
+
+let currentLanguage = 'en';
+
+function t(key) {
+  return TRANSLATIONS[currentLanguage]?.[key] || TRANSLATIONS['en'][key] || key;
+}
+
+function applyTranslations() {
+  // Header
+  document.querySelector('.header-title').textContent = t('appTitle');
+  document.getElementById('settings-btn').title = t('settings');
+
+  // Settings panel
+  document.querySelector('.settings-header span').textContent = t('settingsTitle');
+  document.querySelector('#guardrails-toggle').parentElement.querySelector('span:first-child').textContent = t('guardrailsLabel');
+  document.querySelector('.settings-note').textContent = t('privacyNote');
+  document.querySelector('label[for="language-select"] span').textContent = t('language');
+
+  // Search
+  document.getElementById('role-input').placeholder = t('searchPlaceholder');
+
+  // Sections
+  document.querySelector('[data-toggle="chain-content"]').querySelector('span:first-child').textContent = t('roleChain');
+  document.querySelector('[data-toggle="context-content"]').querySelector('span:first-child').textContent = t('taskContext');
+  document.querySelector('[data-toggle="constraints-content"]').querySelector('span:first-child').textContent = t('modeConstraints');
+
+  // Task & Context
+  document.querySelector('label[for="task-input"]').textContent = t('taskLabel');
+  document.getElementById('task-input').placeholder = t('taskPlaceholder');
+  document.querySelector('label[for="context-input"]').textContent = t('contextLabel');
+  document.getElementById('context-input').placeholder = t('contextPlaceholder');
+  document.querySelector('label[for="output-format-select"]').textContent = t('outputFormatLabel');
+
+  // Output format options
+  const formatSelect = document.getElementById('output-format-select');
+  formatSelect.options[0].textContent = t('formatDefault');
+  formatSelect.options[1].textContent = t('formatBullet');
+  formatSelect.options[2].textContent = t('formatNumbered');
+  formatSelect.options[3].textContent = t('formatParagraph');
+  formatSelect.options[4].textContent = t('formatTable');
+  formatSelect.options[5].textContent = t('formatJson');
+  formatSelect.options[6].textContent = t('formatMarkdown');
+  formatSelect.options[7].textContent = t('formatExecutive');
+  formatSelect.options[8].textContent = t('formatDetailed');
+  formatSelect.options[9].textContent = t('formatComparison');
+  formatSelect.options[10].textContent = t('formatActionable');
+
+  // Mode & Constraints
+  document.querySelector('label[for="mode-select"]').textContent = t('modeLabel');
+  const modeSelect = document.getElementById('mode-select');
+  modeSelect.options[0].textContent = t('modeDefault');
+  modeSelect.options[1].textContent = t('modeAbsolute');
+  modeSelect.options[2].textContent = t('modeCollaborative');
+  modeSelect.options[3].textContent = t('modeExecutive');
+
+  // Constraints
+  document.querySelector('#c-no-questions').parentElement.querySelector('span').textContent = t('noQuestions');
+  document.querySelector('#c-no-emojis').parentElement.querySelector('span').textContent = t('noEmojis');
+  document.querySelector('#c-bullets').parentElement.querySelector('span').textContent = t('bulletPoints');
+  document.querySelector('#c-concise').parentElement.querySelector('span').textContent = t('ultraConcise');
+  document.querySelector('#c-stepbystep').parentElement.querySelector('span').textContent = t('stepByStep');
+  document.querySelector('#c-risks').parentElement.querySelector('span').textContent = t('includeRisks');
+  document.querySelector('#c-first-output').parentElement.querySelector('span').textContent = t('specifyFirstOutput');
+  document.getElementById('first-output-input').placeholder = t('firstOutputPlaceholder');
+
+  // Chain
+  document.getElementById('add-to-chain').textContent = t('addSelectedRole');
+
+  // Guardrails notice
+  document.querySelector('#sensitive-disclaimer span').textContent = t('guardrailNotice');
+
+  // Prompt panel
+  document.querySelector('.prompt-header span').textContent = t('generatedPrompt');
+  document.querySelector('#edit-toggle').parentElement.querySelector('span').textContent = t('edit');
+
+  // Empty state
+  document.querySelector('.helper-text').textContent = t('emptyStateText');
+
+  // Actions
+  document.querySelector('#copy-btn .btn-text').textContent = t('copy');
+  document.querySelector('#copy-btn .btn-success').textContent = t('copied');
+  document.getElementById('export-btn').textContent = t('export');
+
+  // Export menu
+  document.querySelector('#export-menu [data-format="txt"]').textContent = t('exportTxt');
+  document.querySelector('#export-menu [data-format="md"]').textContent = t('exportMd');
+
+  // Re-render dynamic content
+  if (typeof renderChain === 'function') renderChain();
+}
+
+// ============================================
 // SEARCH ENGINE
 // ============================================
 function levenshteinDistance(a, b) {
@@ -4374,7 +4626,6 @@ let state = {
   generatedPrompt: null,
   isSensitive: false,
   roleNames: [],
-  // New state
   chain: [],
   mode: 'default',
   constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
@@ -4384,11 +4635,7 @@ let state = {
   firstOutputText: '',
   guardrailsEnabled: true,
   editMode: false,
-  editedPrompt: null,
-  presets: [],
-  history: [],
-  defaultPresetId: null,
-  activeTab: 'presets'
+  editedPrompt: null
 };
 
 const el = {};
@@ -4409,7 +4656,6 @@ async function init() {
   el.promptEditor = document.getElementById('prompt-editor');
   el.editToggle = document.getElementById('edit-toggle');
   el.copyBtn = document.getElementById('copy-btn');
-  el.saveBtn = document.getElementById('save-preset-btn');
   el.exportBtn = document.getElementById('export-btn');
   el.exportMenu = document.getElementById('export-menu');
   el.settingsBtn = document.getElementById('settings-btn');
@@ -4429,16 +4675,6 @@ async function init() {
   el.modeSelect = document.getElementById('mode-select');
   el.firstOutputGroup = document.getElementById('first-output-group');
   el.firstOutputInput = document.getElementById('first-output-input');
-  el.presetsTab = document.getElementById('presets-tab');
-  el.historyTab = document.getElementById('history-tab');
-  el.presetsList = document.getElementById('presets-list');
-  el.historyList = document.getElementById('history-list');
-  el.saveModal = document.getElementById('save-modal');
-  el.presetNameInput = document.getElementById('preset-name-input');
-  el.setDefaultCheckbox = document.getElementById('set-default-checkbox');
-  el.confirmSave = document.getElementById('confirm-save');
-  el.cancelSave = document.getElementById('cancel-save');
-  el.closeModal = document.getElementById('close-modal');
 
   // Constraint checkboxes
   el.cNoQuestions = document.getElementById('c-no-questions');
@@ -4449,26 +4685,21 @@ async function init() {
   el.cRisks = document.getElementById('c-risks');
   el.cFirstOutput = document.getElementById('c-first-output');
 
+  // Language selector
+  el.languageSelect = document.getElementById('language-select');
+
   // Load saved data
-  const saved = await Storage.get(['presets', 'history', 'defaultPresetId', 'guardrailsEnabled']);
-  state.presets = saved.presets || [];
-  state.history = saved.history || [];
-  state.defaultPresetId = saved.defaultPresetId || null;
+  const saved = await Storage.get(['guardrailsEnabled', 'language']);
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
 
+  // Load language preference
+  currentLanguage = saved.language || 'en';
+  el.languageSelect.value = currentLanguage;
+  applyTranslations();
+
   // Bind events
   bindEvents();
-
-  // Render initial state
-  renderPresets();
-  renderHistory();
-
-  // Load default preset if exists
-  if (state.defaultPresetId) {
-    const defaultPreset = state.presets.find(p => p.id === state.defaultPresetId);
-    if (defaultPreset) loadPreset(defaultPreset);
-  }
 
   el.input.focus();
 }
@@ -4482,7 +4713,6 @@ function bindEvents() {
 
   // Actions
   el.copyBtn.addEventListener('click', handleCopy);
-  el.saveBtn.addEventListener('click', () => el.saveModal.classList.remove('hidden'));
   el.exportBtn.addEventListener('click', toggleExportMenu);
   el.exportMenu.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => handleExport(btn.dataset.format));
@@ -4495,6 +4725,13 @@ function bindEvents() {
     state.guardrailsEnabled = el.guardrailsToggle.checked;
     await Storage.set({ guardrailsEnabled: state.guardrailsEnabled });
     if (state.selectedRole) regeneratePrompt();
+  });
+
+  // Language selector
+  el.languageSelect.addEventListener('change', async () => {
+    currentLanguage = el.languageSelect.value;
+    await Storage.set({ language: currentLanguage });
+    applyTranslations();
   });
 
   // Collapsible sections
@@ -4552,22 +4789,6 @@ function bindEvents() {
   el.promptEditor.addEventListener('input', () => {
     state.editedPrompt = el.promptEditor.value;
   });
-
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      state.activeTab = btn.dataset.tab;
-      el.presetsTab.classList.toggle('hidden', state.activeTab !== 'presets');
-      el.historyTab.classList.toggle('hidden', state.activeTab !== 'history');
-    });
-  });
-
-  // Modal
-  el.confirmSave.addEventListener('click', savePreset);
-  el.cancelSave.addEventListener('click', () => el.saveModal.classList.add('hidden'));
-  el.closeModal.addEventListener('click', () => el.saveModal.classList.add('hidden'));
 }
 
 // ============================================
@@ -4637,7 +4858,7 @@ function handleOutsideClick(e) {
 
 function renderSuggestions() {
   if (state.suggestions.length === 0) {
-    el.suggestions.innerHTML = '<div class="suggestion-no-results">No matches — press Enter to use anyway</div>';
+    el.suggestions.innerHTML = `<div class="suggestion-no-results">${t('noMatches')}</div>`;
     el.suggestions.classList.remove('hidden');
     return;
   }
@@ -4680,7 +4901,6 @@ function selectRole(key) {
   hideSuggestions();
   el.addToChain.disabled = false;
   regeneratePrompt();
-  addToHistory();
 }
 
 function regeneratePrompt() {
@@ -4725,7 +4945,6 @@ function updateUI() {
   }
 
   el.copyBtn.disabled = !hasPrompt;
-  el.saveBtn.disabled = !hasPrompt;
   el.exportBtn.disabled = !hasPrompt;
 
   // Reset edit mode
@@ -4764,7 +4983,7 @@ function moveInChain(index, direction) {
 
 function renderChain() {
   if (state.chain.length === 0) {
-    el.chainList.innerHTML = '<p class="empty-list-msg" style="padding:0;margin:0;font-size:11px;">No roles in chain yet.</p>';
+    el.chainList.innerHTML = `<p class="empty-list-msg" style="padding:0;margin:0;font-size:11px;">${t('noRolesInChain')}</p>`;
     el.chainCount.classList.add('hidden');
   } else {
     el.chainCount.textContent = state.chain.length;
@@ -4876,217 +5095,6 @@ function handleExport(format) {
   URL.revokeObjectURL(url);
 
   el.exportMenu.classList.add('hidden');
-}
-
-// ============================================
-// PRESETS
-// ============================================
-async function savePreset() {
-  const name = el.presetNameInput.value.trim();
-  if (!name || !state.generatedPrompt) return;
-
-  const preset = {
-    id: Date.now().toString(),
-    name,
-    roleKey: state.selectedRole,
-    roleName: state.roleNames.join(' + '),
-    chain: [...state.chain],
-    mode: state.mode,
-    constraints: {
-      noQuestions: el.cNoQuestions.checked,
-      noEmojis: el.cNoEmojis.checked,
-      bullets: el.cBullets.checked,
-      concise: el.cConcise.checked,
-      stepByStep: el.cStepByStep.checked,
-      risks: el.cRisks.checked,
-      firstOutput: el.cFirstOutput.checked
-    },
-    task: state.task,
-    context: state.context,
-    outputFormat: state.outputFormat,
-    firstOutputText: state.firstOutputText,
-    createdAt: Date.now()
-  };
-
-  state.presets.unshift(preset);
-
-  if (el.setDefaultCheckbox.checked) {
-    state.defaultPresetId = preset.id;
-  }
-
-  await Storage.set({ presets: state.presets, defaultPresetId: state.defaultPresetId });
-
-  el.saveModal.classList.add('hidden');
-  el.presetNameInput.value = '';
-  el.setDefaultCheckbox.checked = false;
-
-  renderPresets();
-}
-
-function loadPreset(preset) {
-  state.selectedRole = preset.roleKey;
-  state.chain = preset.chain || [];
-  state.mode = preset.mode || 'default';
-  state.task = preset.task || '';
-  state.context = preset.context || '';
-  state.outputFormat = preset.outputFormat || '';
-  state.firstOutputText = preset.firstOutputText || '';
-
-  el.input.value = preset.roleName;
-  el.modeSelect.value = state.mode;
-  el.taskInput.value = state.task;
-  el.contextInput.value = state.context;
-  el.outputFormatSelect.value = state.outputFormat;
-  el.firstOutputInput.value = state.firstOutputText;
-
-  const c = preset.constraints || {};
-  el.cNoQuestions.checked = c.noQuestions || false;
-  el.cNoEmojis.checked = c.noEmojis || false;
-  el.cBullets.checked = c.bullets || false;
-  el.cConcise.checked = c.concise || false;
-  el.cStepByStep.checked = c.stepByStep || false;
-  el.cRisks.checked = c.risks || false;
-  el.cFirstOutput.checked = c.firstOutput || false;
-  el.firstOutputGroup.classList.toggle('hidden', !c.firstOutput);
-
-  el.addToChain.disabled = false;
-  regeneratePrompt();
-}
-
-async function deletePreset(id) {
-  state.presets = state.presets.filter(p => p.id !== id);
-  if (state.defaultPresetId === id) state.defaultPresetId = null;
-  await Storage.set({ presets: state.presets, defaultPresetId: state.defaultPresetId });
-  renderPresets();
-}
-
-async function duplicatePreset(preset) {
-  const copy = { ...preset, id: Date.now().toString(), name: preset.name + ' (copy)', createdAt: Date.now() };
-  state.presets.unshift(copy);
-  await Storage.set({ presets: state.presets });
-  renderPresets();
-}
-
-async function setDefaultPreset(id) {
-  state.defaultPresetId = state.defaultPresetId === id ? null : id;
-  await Storage.set({ defaultPresetId: state.defaultPresetId });
-  renderPresets();
-}
-
-function renderPresets() {
-  if (state.presets.length === 0) {
-    el.presetsList.innerHTML = '<p class="empty-list-msg">No saved presets yet.</p>';
-    return;
-  }
-
-  let html = '';
-  state.presets.forEach(p => {
-    const isDefault = p.id === state.defaultPresetId;
-    html += `<div class="preset-item">
-      <div class="preset-item-info">
-        <span class="preset-item-name">${esc(p.name)}${isDefault ? '<span class="preset-default-badge">Default</span>' : ''}</span>
-        <span class="preset-item-role">${esc(p.roleName)}</span>
-      </div>
-      <div class="preset-item-actions">
-        <button class="preset-item-btn" data-action="load" data-id="${p.id}" title="Load">▶</button>
-        <button class="preset-item-btn" data-action="default" data-id="${p.id}" title="Set default">★</button>
-        <button class="preset-item-btn" data-action="duplicate" data-id="${p.id}" title="Duplicate">⧉</button>
-        <button class="preset-item-btn" data-action="delete" data-id="${p.id}" title="Delete">×</button>
-      </div>
-    </div>`;
-  });
-  el.presetsList.innerHTML = html;
-
-  el.presetsList.querySelectorAll('.preset-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.id;
-      const preset = state.presets.find(p => p.id === id);
-      if (!preset) return;
-
-      switch (btn.dataset.action) {
-        case 'load': loadPreset(preset); break;
-        case 'default': setDefaultPreset(id); break;
-        case 'duplicate': duplicatePreset(preset); break;
-        case 'delete': deletePreset(id); break;
-      }
-    });
-  });
-}
-
-// ============================================
-// HISTORY
-// ============================================
-async function addToHistory() {
-  if (!state.generatedPrompt) return;
-
-  const entry = {
-    id: Date.now().toString(),
-    roleKey: state.selectedRole,
-    roleName: state.roleNames.join(' + '),
-    prompt: state.generatedPrompt,
-    timestamp: Date.now()
-  };
-
-  state.history.unshift(entry);
-  state.history = state.history.slice(0, 50); // Keep last 50
-
-  await Storage.set({ history: state.history });
-  renderHistory();
-}
-
-function loadFromHistory(entry) {
-  state.selectedRole = entry.roleKey;
-  state.generatedPrompt = entry.prompt;
-  state.roleNames = [entry.roleName];
-  el.input.value = entry.roleName;
-  el.addToChain.disabled = false;
-  updateUI();
-}
-
-async function copyFromHistory(entry) {
-  try {
-    await navigator.clipboard.writeText(entry.prompt);
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = entry.prompt;
-    ta.style.cssText = 'position:fixed;opacity:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-}
-
-function renderHistory() {
-  if (state.history.length === 0) {
-    el.historyList.innerHTML = '<p class="empty-list-msg">No prompt history yet.</p>';
-    return;
-  }
-
-  let html = '';
-  state.history.forEach(h => {
-    const time = new Date(h.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-    html += `<div class="history-item">
-      <div class="history-item-info">
-        <span class="history-item-role">${esc(h.roleName)}</span>
-        <span class="history-item-time">${time}</span>
-      </div>
-      <div class="history-item-actions">
-        <button class="history-item-btn" data-action="load" data-id="${h.id}" title="Load">▶</button>
-        <button class="history-item-btn" data-action="copy" data-id="${h.id}" title="Copy">⧉</button>
-      </div>
-    </div>`;
-  });
-  el.historyList.innerHTML = html;
-
-  el.historyList.querySelectorAll('.history-item-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const entry = state.history.find(h => h.id === btn.dataset.id);
-      if (!entry) return;
-      if (btn.dataset.action === 'load') loadFromHistory(entry);
-      else if (btn.dataset.action === 'copy') copyFromHistory(entry);
-    });
-  });
 }
 
 // ============================================

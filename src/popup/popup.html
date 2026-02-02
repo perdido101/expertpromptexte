@@ -35,6 +35,13 @@
         <button id="close-settings" class="icon-btn-sm">&times;</button>
       </div>
       <div class="settings-content">
+        <label for="language-select" class="field-group-inline">
+          <span>Language</span>
+          <select id="language-select" class="field-select-sm">
+            <option value="en">English</option>
+            <option value="el">Ελληνικά</option>
+          </select>
+        </label>
         <label class="toggle-row">
           <span>Auto-add guardrails for sensitive roles</span>
           <input type="checkbox" id="guardrails-toggle" checked>
@@ -161,7 +168,6 @@
         <span class="btn-text">Copy</span>
         <span class="btn-success hidden">Copied!</span>
       </button>
-      <button id="save-preset-btn" class="btn-secondary" disabled>Save</button>
       <button id="export-btn" class="btn-secondary" disabled>Export</button>
     </div>
 
@@ -169,47 +175,6 @@
     <div id="export-menu" class="dropdown-menu hidden">
       <button data-format="txt">Export as .txt</button>
       <button data-format="md">Export as .md</button>
-    </div>
-
-    <!-- Bottom Tabs -->
-    <div class="bottom-tabs">
-      <button class="tab-btn active" data-tab="presets">Presets</button>
-      <button class="tab-btn" data-tab="history">History</button>
-    </div>
-
-    <!-- Presets Tab -->
-    <div id="presets-tab" class="tab-content">
-      <div id="presets-list" class="presets-list">
-        <p class="empty-list-msg">No saved presets yet.</p>
-      </div>
-    </div>
-
-    <!-- History Tab -->
-    <div id="history-tab" class="tab-content hidden">
-      <div id="history-list" class="history-list">
-        <p class="empty-list-msg">No prompt history yet.</p>
-      </div>
-    </div>
-
-    <!-- Save Preset Modal -->
-    <div id="save-modal" class="modal hidden">
-      <div class="modal-content">
-        <div class="modal-header">
-          <span>Save Preset</span>
-          <button id="close-modal" class="icon-btn-sm">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="field-group">
-            <label for="preset-name-input">Preset Name</label>
-            <input type="text" id="preset-name-input" class="field-input" placeholder="e.g., My Marketing Setup">
-          </div>
-          <label class="constraint-toggle"><input type="checkbox" id="set-default-checkbox"><span>Set as default</span></label>
-        </div>
-        <div class="modal-footer">
-          <button id="cancel-save" class="btn-secondary">Cancel</button>
-          <button id="confirm-save" class="btn-primary">Save</button>
-        </div>
-      </div>
     </div>
   </div>
 
