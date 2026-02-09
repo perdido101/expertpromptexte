@@ -1,3 +1,8 @@
+---
+layout: default
+title: Privacy Policy — ExpertPrompt Extension
+---
+
 # Privacy Policy — ExpertPrompt Extension
 
 **Last updated:** February 9, 2026
