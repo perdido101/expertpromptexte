@@ -4,7 +4,7 @@ A Chrome/Edge Manifest V3 extension for generating expert role prompts with adva
 
 ## Links
 
-- [Privacy Policy](https://perdido101.github.io/expertpromptexte/privacy-policy)
+- [Privacy Policy](https://perdido101.github.io/expertpromptexte/privacy-policy.html)
 
 ## Loading the Extension
 
