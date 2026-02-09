@@ -2,6 +2,10 @@
 
 A Chrome/Edge Manifest V3 extension for generating expert role prompts with advanced customization options.
 
+## Links
+
+- [Privacy Policy](https://perdido101.github.io/expertpromptexte/privacy-policy)
+
 ## Loading the Extension
 
 1. Open Chrome and navigate to `chrome://extensions/`
