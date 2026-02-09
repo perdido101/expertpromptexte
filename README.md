@@ -107,11 +107,7 @@ src/
 ├── popup/
 │   ├── popup.html    # Main popup UI
 │   ├── popup.css     # All styles
-│   └── popup.js      # Bundled: roles database + all features
-├── data/
-│   ├── roles.js      # (reference) Role definitions
-│   ├── searchEngine.js
-│   └── promptGenerator.js  # compilePrompt() + Expert Spine
+│   └── popup.js      # Bundled: roles database + search + prompt compiler + UI
 tests/
 │   └── compilePrompt.test.js  # Node test harness
 public/
