@@ -49,7 +49,29 @@ const DISCLAIMERS = {
 
 const SENSITIVE_KEYWORDS = ['legal', 'lawyer', 'attorney', 'medical', 'doctor'];
 
-// MODE_PRESETS no longer used — modes are independent toggles
+const ABSOLUTE_MODE_BLOCK = `
+
+ABSOLUTE MODE
+
+Communication parameters:
+- Be direct and blunt. Zero hedging, zero filler, zero pleasantries.
+- State your professional opinion as a clear position, not a suggestion.
+- If something is wrong, say it plainly. If something will fail, say so.
+- No "it depends" without immediately following with your best judgment given available information.
+- Compress your response to maximum information density. Every sentence must earn its place.`;
+
+const EXECUTIVE_MODE_BLOCK = `
+
+EXECUTIVE SUMMARY MODE
+
+Structure every response as an executive briefing:
+1. **Bottom Line Up Front (BLUF):** Lead with your key conclusion or recommendation in 1–2 sentences.
+2. **Key Findings:** 3–5 bullet points covering the most important points.
+3. **Recommendation:** Your specific, actionable recommendation.
+4. **Risks & Considerations:** Brief list of key risks or trade-offs.
+5. **Next Steps:** 2–3 concrete next actions.
+
+Keep total response under 300 words unless the user requests more detail.`;
 
 const OUTPUT_FORMAT_MAP = {
   '': '',
@@ -138,7 +160,10 @@ Once the user has answered your intake questions:
 - Continue iteratively: draft → feedback → improve.`;
 
 function compilePrompt(state) {
-  const { selectedRole, intakeMode = false, collaborativeMode = false, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const { selectedRole, intakeMode = false, modes = {}, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const collaborativeMode = modes.collaborative || false;
+  const absoluteMode = modes.absolute || false;
+  const executiveMode = modes.executive || false;
   const roleInput = selectedRole || '';
   const q = roleInput.toLowerCase().trim();
 
@@ -165,6 +190,13 @@ function compilePrompt(state) {
     prompt += INTAKE_MODE_BLOCK;
   } else if (collaborativeMode) {
     prompt += COLLABORATIVE_MODE_BLOCK;
+  }
+
+  if (absoluteMode) {
+    prompt += ABSOLUTE_MODE_BLOCK;
+  }
+  if (executiveMode) {
+    prompt += EXECUTIVE_MODE_BLOCK;
   }
 
   const activeConstraints = [];
@@ -268,17 +300,17 @@ console.log('\nIntake mode:');
 // Test 5: Collaborative mode adds iterative block
 console.log('\nCollaborative mode:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', collaborativeMode: true });
+  const result = compilePrompt({ selectedRole: 'philosopher', modes: { collaborative: true } });
   assert(result.prompt.includes('COLLABORATIVE MODE'), 'collaborative block present');
   assert(result.prompt.includes('immediate draft'), 'collaborative allows immediate output');
   assert(result.prompt.includes('refinement cycle'), 'collaborative is iterative');
   assert(!result.prompt.includes('EXPERT INTAKE PROTOCOL'), 'no intake in collaborative-only mode');
 }
 
-// Test 6: Dual mode (both enabled) — intake first, then collaborative
+// Test 6: Dual mode (intake + collaborative) — intake first, then collaborative
 console.log('\nDual mode (intake + collaborative):');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, collaborativeMode: true });
+  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, modes: { collaborative: true } });
   assert(result.prompt.includes('PHASE 1'), 'dual mode has Phase 1');
   assert(result.prompt.includes('PHASE 2'), 'dual mode has Phase 2');
   assert(result.prompt.includes('intake questions only'), 'Phase 1 gates advice');
@@ -295,6 +327,54 @@ console.log('\nNo modes enabled:');
   assert(!result.prompt.includes('EXPERT INTAKE PROTOCOL'), 'no intake when modes off');
   assert(!result.prompt.includes('COLLABORATIVE MODE'), 'no collaborative when modes off');
   assert(!result.prompt.includes('PHASE 1'), 'no dual mode when modes off');
+  assert(!result.prompt.includes('ABSOLUTE MODE'), 'no absolute when modes off');
+  assert(!result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'no executive when modes off');
+}
+
+// Test 6c: Absolute mode adds blunt block
+console.log('\nAbsolute mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', modes: { absolute: true } });
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute mode block present');
+  assert(result.prompt.includes('Zero hedging, zero filler'), 'absolute enforces bluntness');
+  assert(result.prompt.includes('information density'), 'absolute enforces density');
+  assert(!result.prompt.includes('COLLABORATIVE MODE'), 'no collaborative in absolute-only');
+}
+
+// Test 6d: Executive mode adds briefing structure
+console.log('\nExecutive mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', modes: { executive: true } });
+  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive mode block present');
+  assert(result.prompt.includes('Bottom Line Up Front'), 'executive has BLUF');
+  assert(result.prompt.includes('Key Findings'), 'executive has key findings');
+  assert(result.prompt.includes('Next Steps'), 'executive has next steps');
+}
+
+// Test 6e: Absolute + Executive can combine
+console.log('\nAbsolute + Executive combined:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', modes: { absolute: true, executive: true } });
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present in combo');
+  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive present in combo');
+}
+
+// Test 6f: Intake + Absolute (no special dual block)
+console.log('\nIntake + Absolute:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, modes: { absolute: true } });
+  assert(result.prompt.includes('EXPERT INTAKE PROTOCOL (MANDATORY)'), 'intake present');
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present alongside intake');
+  assert(!result.prompt.includes('PHASE 1'), 'no dual mode block without collaborative');
+}
+
+// Test 6g: All modes enabled
+console.log('\nAll modes enabled:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, modes: { collaborative: true, absolute: true, executive: true } });
+  assert(result.prompt.includes('PHASE 1'), 'dual mode block from intake+collaborative');
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute appended');
+  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive appended');
 }
 
 // Test 7: Task and context included
@@ -348,8 +428,11 @@ console.log('\nSpine immutability:');
   const configs = [
     { label: 'no modes', opts: {} },
     { label: 'intake only', opts: { intakeMode: true } },
-    { label: 'collaborative only', opts: { collaborativeMode: true } },
-    { label: 'both modes', opts: { intakeMode: true, collaborativeMode: true } }
+    { label: 'collaborative only', opts: { modes: { collaborative: true } } },
+    { label: 'intake + collaborative', opts: { intakeMode: true, modes: { collaborative: true } } },
+    { label: 'absolute', opts: { modes: { absolute: true } } },
+    { label: 'executive', opts: { modes: { executive: true } } },
+    { label: 'all modes', opts: { intakeMode: true, modes: { collaborative: true, absolute: true, executive: true } } }
   ];
   configs.forEach(({ label, opts }) => {
     const result = compilePrompt({ selectedRole: 'philosopher', ...opts });

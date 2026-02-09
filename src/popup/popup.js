@@ -10223,6 +10223,7 @@ const TRANSLATIONS = {
     noMatches: 'No matches — press Enter to use anyway',
 
     // Sections
+    modesSection: 'Modes',
     contextSection: 'Context',
     constraintsSection: 'Constraints',
 
@@ -10231,7 +10232,11 @@ const TRANSLATIONS = {
     modeIntakeHint: 'Ask clarifying questions first. No solutions until you answer.',
     modeCollaborativeLabel: 'Collaborative',
     modeCollaborativeHint: 'Work together iteratively. Draft, refine, and explore options.',
-    dualModeHint: 'When both are on: questions first, collaboration after.',
+    modeAbsoluteLabel: 'Absolute',
+    modeAbsoluteHint: 'Direct, blunt, zero filler. Maximum information density.',
+    modeExecutiveLabel: 'Executive Summary',
+    modeExecutiveHint: 'Bottom-line-up-front briefing. Key findings, risks, next steps.',
+    dualModeHint: 'Intake + Collaborative: questions first, collaboration after.',
 
     // Context fields
     taskLabel: 'Goal',
@@ -10298,6 +10303,7 @@ const TRANSLATIONS = {
     noMatches: 'Δεν βρέθηκαν αποτελέσματα — πατήστε Enter για χρήση',
 
     // Sections (displayed uppercase via CSS - no accents)
+    modesSection: 'Λειτουργιες',
     contextSection: 'Πλαισιο',
     constraintsSection: 'Περιορισμοι',
 
@@ -10306,7 +10312,11 @@ const TRANSLATIONS = {
     modeIntakeHint: 'Πρώτα διευκρινιστικές ερωτήσεις. Καμία λύση μέχρι να απαντήσετε.',
     modeCollaborativeLabel: 'Συνεργατική',
     modeCollaborativeHint: 'Δουλέψτε μαζί επαναληπτικά. Σχέδιο, βελτίωση, εξερεύνηση.',
-    dualModeHint: 'Όταν είναι και τα δύο ενεργά: ερωτήσεις πρώτα, συνεργασία μετά.',
+    modeAbsoluteLabel: 'Απόλυτη',
+    modeAbsoluteHint: 'Άμεση, ευθεία, χωρίς περιττά. Μέγιστη πυκνότητα πληροφορίας.',
+    modeExecutiveLabel: 'Εκτελεστική Περίληψη',
+    modeExecutiveHint: 'Συμπέρασμα πρώτα. Βασικά ευρήματα, κίνδυνοι, επόμενα βήματα.',
+    dualModeHint: 'Εισαγωγή + Συνεργατική: ερωτήσεις πρώτα, συνεργασία μετά.',
 
     // Context fields (labels displayed uppercase via CSS - no accents)
     taskLabel: 'Στοχος',
@@ -10384,9 +10394,14 @@ function applyTranslations() {
   document.querySelector('#mode-intake').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeIntakeHint');
   document.querySelector('#mode-collaborative').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeCollaborativeLabel');
   document.querySelector('#mode-collaborative').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeCollaborativeHint');
+  document.querySelector('#mode-absolute').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeAbsoluteLabel');
+  document.querySelector('#mode-absolute').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeAbsoluteHint');
+  document.querySelector('#mode-executive').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeExecutiveLabel');
+  document.querySelector('#mode-executive').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeExecutiveHint');
   document.getElementById('dual-mode-hint').textContent = t('dualModeHint');
 
   // Sections
+  document.querySelector('[data-toggle="modes-content"]').querySelector('span:first-child').textContent = t('modesSection');
   document.querySelector('[data-toggle="context-content"]').querySelector('span:first-child').textContent = t('contextSection');
   document.querySelector('[data-toggle="constraints-content"]').querySelector('span:first-child').textContent = t('constraintsSection');
 
@@ -10643,8 +10658,37 @@ Once the user has answered your intake questions:
 - Invite the user to refine, redirect, or drill deeper.
 - Continue iteratively: draft → feedback → improve.`;
 
+// Absolute Mode — blunt, no-fluff communication
+const ABSOLUTE_MODE_BLOCK = `
+
+ABSOLUTE MODE
+
+Communication parameters:
+- Be direct and blunt. Zero hedging, zero filler, zero pleasantries.
+- State your professional opinion as a clear position, not a suggestion.
+- If something is wrong, say it plainly. If something will fail, say so.
+- No "it depends" without immediately following with your best judgment given available information.
+- Compress your response to maximum information density. Every sentence must earn its place.`;
+
+// Executive Summary Mode — structured executive briefing
+const EXECUTIVE_MODE_BLOCK = `
+
+EXECUTIVE SUMMARY MODE
+
+Structure every response as an executive briefing:
+1. **Bottom Line Up Front (BLUF):** Lead with your key conclusion or recommendation in 1–2 sentences.
+2. **Key Findings:** 3–5 bullet points covering the most important points.
+3. **Recommendation:** Your specific, actionable recommendation.
+4. **Risks & Considerations:** Brief list of key risks or trade-offs.
+5. **Next Steps:** 2–3 concrete next actions.
+
+Keep total response under 300 words unless the user requests more detail.`;
+
 function compilePrompt(state) {
-  const { selectedRole, intakeMode = false, collaborativeMode = false, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const { selectedRole, intakeMode = false, modes = {}, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const collaborativeMode = modes.collaborative || false;
+  const absoluteMode = modes.absolute || false;
+  const executiveMode = modes.executive || false;
   const roleInput = selectedRole || '';
   const q = roleInput.toLowerCase().trim();
 
@@ -10669,13 +10713,22 @@ function compilePrompt(state) {
   // 2) Role-specific block
   prompt += '\n\n' + roleBlock;
 
-  // 3) Mode blocks: intake, collaborative, or both
+  // 3) Mode blocks
+  // Intake + Collaborative have a special combined block
   if (intakeMode && collaborativeMode) {
     prompt += DUAL_MODE_BLOCK;
   } else if (intakeMode) {
     prompt += INTAKE_MODE_BLOCK;
   } else if (collaborativeMode) {
     prompt += COLLABORATIVE_MODE_BLOCK;
+  }
+
+  // Absolute and Executive modes are additive
+  if (absoluteMode) {
+    prompt += ABSOLUTE_MODE_BLOCK;
+  }
+  if (executiveMode) {
+    prompt += EXECUTIVE_MODE_BLOCK;
   }
 
   // 4) Constraints
@@ -10790,7 +10843,7 @@ let state = {
   isSensitive: false,
   roleNames: [],
   intakeMode: false,
-  collaborativeMode: false,
+  modes: { collaborative: false, absolute: false, executive: false },
   constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
   task: '',
   context: '',
@@ -10830,6 +10883,8 @@ async function init() {
   el.staleIndicator = document.getElementById('stale-indicator');
   el.modeIntake = document.getElementById('mode-intake');
   el.modeCollaborative = document.getElementById('mode-collaborative');
+  el.modeAbsolute = document.getElementById('mode-absolute');
+  el.modeExecutive = document.getElementById('mode-executive');
   el.dualModeHint = document.getElementById('dual-mode-hint');
   el.contextContent = document.getElementById('context-content');
   el.constraintsContent = document.getElementById('constraints-content');
@@ -10852,7 +10907,7 @@ async function init() {
   el.languageSelect = document.getElementById('language-select');
 
   // Load saved data + migrate old state
-  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole', 'intakeMode', 'collaborativeMode']);
+  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole', 'intakeMode', 'modes', 'collaborativeMode']);
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
 
@@ -10864,9 +10919,19 @@ async function init() {
 
   // Restore mode toggles
   state.intakeMode = saved.intakeMode === true;
-  state.collaborativeMode = saved.collaborativeMode === true;
+
+  // Migration: if old collaborativeMode exists, move it into modes object
+  if (saved.collaborativeMode === true && !saved.modes) {
+    state.modes = { collaborative: true, absolute: false, executive: false };
+    await Storage.set({ modes: state.modes, collaborativeMode: null });
+  } else if (saved.modes && typeof saved.modes === 'object') {
+    state.modes = { collaborative: !!saved.modes.collaborative, absolute: !!saved.modes.absolute, executive: !!saved.modes.executive };
+  }
+
   el.modeIntake.checked = state.intakeMode;
-  el.modeCollaborative.checked = state.collaborativeMode;
+  el.modeCollaborative.checked = state.modes.collaborative;
+  el.modeAbsolute.checked = state.modes.absolute;
+  el.modeExecutive.checked = state.modes.executive;
   updateDualModeHint();
 
   // Load language preference
@@ -10928,6 +10993,8 @@ function bindEvents() {
   // Mode toggles
   el.modeIntake.addEventListener('change', handleModeToggle);
   el.modeCollaborative.addEventListener('change', handleModeToggle);
+  el.modeAbsolute.addEventListener('change', handleModeToggle);
+  el.modeExecutive.addEventListener('change', handleModeToggle);
 
   // Constraints
   [el.cNoQuestions, el.cNoEmojis, el.cBullets, el.cConcise, el.cStepByStep, el.cRisks].forEach(cb => {
@@ -11087,7 +11154,7 @@ function regeneratePrompt() {
   const result = compilePrompt({
     selectedRole: state.selectedRole,
     intakeMode: state.intakeMode,
-    collaborativeMode: state.collaborativeMode,
+    modes: state.modes,
     constraints: {
       noQuestions: el.cNoQuestions.checked,
       noEmojis: el.cNoEmojis.checked,
@@ -11154,14 +11221,18 @@ function updateUI() {
 // ============================================
 async function handleModeToggle() {
   state.intakeMode = el.modeIntake.checked;
-  state.collaborativeMode = el.modeCollaborative.checked;
+  state.modes = {
+    collaborative: el.modeCollaborative.checked,
+    absolute: el.modeAbsolute.checked,
+    executive: el.modeExecutive.checked
+  };
   updateDualModeHint();
-  await Storage.set({ intakeMode: state.intakeMode, collaborativeMode: state.collaborativeMode });
+  await Storage.set({ intakeMode: state.intakeMode, modes: state.modes });
   if (state.selectedRole) markStale();
 }
 
 function updateDualModeHint() {
-  el.dualModeHint.classList.toggle('hidden', !(state.intakeMode && state.collaborativeMode));
+  el.dualModeHint.classList.toggle('hidden', !(state.intakeMode && state.modes.collaborative));
 }
 
 function handleConstraintChange() {
