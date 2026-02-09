@@ -60,19 +60,6 @@
       <div id="suggestions" class="suggestions hidden"></div>
     </div>
 
-    <!-- Role Chain Section -->
-    <div id="chain-section" class="collapsible-section">
-      <button class="section-header" data-toggle="chain-content">
-        <span>Role Chain</span>
-        <span class="chain-count hidden" id="chain-count">0</span>
-        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <div id="chain-content" class="section-content hidden">
-        <div id="chain-list" class="chain-list"></div>
-        <button id="add-to-chain" class="btn-secondary btn-sm" disabled>+ Add selected role</button>
-      </div>
-    </div>
-
     <!-- Task/Context Section -->
     <div id="context-section" class="collapsible-section">
       <button class="section-header" data-toggle="context-content">
@@ -120,6 +107,7 @@
             <option value="default">Default</option>
             <option value="absolute">Absolute (blunt, no fluff)</option>
             <option value="collaborative">Collaborative (asks questions)</option>
+            <option value="intake">Expert Intake (questions first)</option>
             <option value="executive">Executive Summary</option>
           </select>
         </div>
@@ -162,13 +150,19 @@
       <p class="helper-text">Search and select a role to generate your prompt.</p>
     </div>
 
+    <!-- Stale Indicator -->
+    <div id="stale-indicator" class="stale-indicator hidden">
+      Settings changed — click <strong>Regenerate</strong> to update.
+    </div>
+
     <!-- Actions Row -->
     <div class="actions-row">
-      <button id="copy-btn" class="btn-primary" disabled>
+      <button id="regenerate-btn" class="btn-regenerate" disabled>Regenerate Prompt</button>
+      <button id="copy-btn" class="btn-copy" disabled>
         <span class="btn-text">Copy</span>
         <span class="btn-success hidden">Copied!</span>
       </button>
-      <button id="export-btn" class="btn-secondary" disabled>Export</button>
+      <button id="export-btn" class="btn-secondary btn-export-sm" disabled>Export</button>
     </div>
 
     <!-- Export Menu -->

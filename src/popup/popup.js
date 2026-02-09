@@ -13696,7 +13696,6 @@ const AMBIGUOUS_ROLES = {
 const FEATURE_FLAGS = {
   savedRoles: true,
   modes: true,
-  chaining: true,
   history: true,
   export: true,
   guardrails: true,
@@ -13754,6 +13753,7 @@ const TRANSLATIONS = {
     modeDefault: 'Default',
     modeAbsolute: 'Absolute (blunt, no fluff)',
     modeCollaborative: 'Collaborative (asks questions)',
+    modeIntake: 'Expert Intake (questions first)',
     modeExecutive: 'Executive Summary',
 
     // Constraints
@@ -13766,10 +13766,6 @@ const TRANSLATIONS = {
     specifyFirstOutput: 'Specify first output',
     firstOutputPlaceholder: 'e.g., Start with a summary',
 
-    // Chain
-    addSelectedRole: '+ Add selected role',
-    noRolesInChain: 'No roles in chain yet.',
-
     // Guardrails notice
     guardrailNotice: 'Guardrail added: informational-only disclaimer included.',
 
@@ -13781,6 +13777,8 @@ const TRANSLATIONS = {
     emptyStateText: 'Search and select a role to generate your prompt.',
 
     // Actions
+    regenerate: 'Regenerate Prompt',
+    staleIndicator: 'Settings changed — click <strong>Regenerate</strong> to update.',
     copy: 'Copy',
     copied: 'Copied!',
     export: 'Export',
@@ -13832,6 +13830,7 @@ const TRANSLATIONS = {
     modeDefault: 'Προεπιλογή',
     modeAbsolute: 'Απόλυτη (άμεση, χωρίς περιττά)',
     modeCollaborative: 'Συνεργατική (κάνει ερωτήσεις)',
+    modeIntake: 'Εισαγωγή Ειδικού (ερωτήσεις πρώτα)',
     modeExecutive: 'Εκτελεστική Περίληψη',
 
     // Constraints
@@ -13844,10 +13843,6 @@ const TRANSLATIONS = {
     specifyFirstOutput: 'Καθορισμός πρώτης εξόδου',
     firstOutputPlaceholder: 'π.χ., Ξεκινήστε με περίληψη',
 
-    // Chain
-    addSelectedRole: '+ Προσθήκη επιλεγμένου ρόλου',
-    noRolesInChain: 'Δεν υπάρχουν ρόλοι στην αλυσίδα.',
-
     // Guardrails notice
     guardrailNotice: 'Προστασία: συμπεριλήφθηκε δήλωση αποποίησης ευθυνών.',
 
@@ -13859,6 +13854,8 @@ const TRANSLATIONS = {
     emptyStateText: 'Αναζητήστε και επιλέξτε έναν ρόλο για να δημιουργήσετε το prompt σας.',
 
     // Actions
+    regenerate: 'Ανανέωση Prompt',
+    staleIndicator: 'Οι ρυθμίσεις άλλαξαν — πατήστε <strong>Ανανέωση</strong> για ενημέρωση.',
     copy: 'Αντιγραφή',
     copied: 'Αντιγράφηκε!',
     export: 'Εξαγωγή',
@@ -13888,7 +13885,6 @@ function applyTranslations() {
   document.getElementById('role-input').placeholder = t('searchPlaceholder');
 
   // Sections
-  document.querySelector('[data-toggle="chain-content"]').querySelector('span:first-child').textContent = t('roleChain');
   document.querySelector('[data-toggle="context-content"]').querySelector('span:first-child').textContent = t('taskContext');
   document.querySelector('[data-toggle="constraints-content"]').querySelector('span:first-child').textContent = t('modeConstraints');
 
@@ -13919,7 +13915,8 @@ function applyTranslations() {
   modeSelect.options[0].textContent = t('modeDefault');
   modeSelect.options[1].textContent = t('modeAbsolute');
   modeSelect.options[2].textContent = t('modeCollaborative');
-  modeSelect.options[3].textContent = t('modeExecutive');
+  modeSelect.options[3].textContent = t('modeIntake');
+  modeSelect.options[4].textContent = t('modeExecutive');
 
   // Constraints
   document.querySelector('#c-no-questions').parentElement.querySelector('span').textContent = t('noQuestions');
@@ -13930,9 +13927,6 @@ function applyTranslations() {
   document.querySelector('#c-risks').parentElement.querySelector('span').textContent = t('includeRisks');
   document.querySelector('#c-first-output').parentElement.querySelector('span').textContent = t('specifyFirstOutput');
   document.getElementById('first-output-input').placeholder = t('firstOutputPlaceholder');
-
-  // Chain
-  document.getElementById('add-to-chain').textContent = t('addSelectedRole');
 
   // Guardrails notice
   document.querySelector('#sensitive-disclaimer span').textContent = t('guardrailNotice');
@@ -13947,14 +13941,13 @@ function applyTranslations() {
   // Actions
   document.querySelector('#copy-btn .btn-text').textContent = t('copy');
   document.querySelector('#copy-btn .btn-success').textContent = t('copied');
+  document.getElementById('regenerate-btn').textContent = t('regenerate');
   document.getElementById('export-btn').textContent = t('export');
 
   // Export menu
   document.querySelector('#export-menu [data-format="txt"]').textContent = t('exportTxt');
   document.querySelector('#export-menu [data-format="md"]').textContent = t('exportMd');
 
-  // Re-render dynamic content
-  if (typeof renderChain === 'function') renderChain();
 }
 
 // ============================================
@@ -14045,6 +14038,7 @@ const MODE_PRESETS = {
   default: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false },
   absolute: { noQuestions: true, noEmojis: true, bullets: false, concise: true, stepByStep: false, risks: false },
   collaborative: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
+  intake: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
   executive: { noQuestions: true, noEmojis: true, bullets: true, concise: true, stepByStep: false, risks: true }
 };
 
@@ -14088,82 +14082,79 @@ Priorities: Accuracy, practical utility, and clear communication.
 Boundaries: You provide informational guidance based on general expertise. You do not claim specific credentials or replace professional consultation when needed.`;
 }
 
-function generateChainPrompt(chain, options) {
-  const roleBlocks = chain.map((roleKey, idx) => {
-    const role = ROLE_DATABASE[ROLE_SYNONYMS[roleKey] || roleKey];
-    const block = role ? generateRoleBlock(role) : generateUnknownRoleBlock(roleKey);
-    return `### Step ${idx + 1}: ${role?.name || roleKey.charAt(0).toUpperCase() + roleKey.slice(1)}\n${block}`;
-  }).join('\n\n---\n\n');
+// Expert Operating Contract — non-negotiable spine included in every prompt
+function buildExpertSpine(roleName) {
+  return `EXPERT OPERATING CONTRACT
 
-  return `You will execute a multi-role workflow. Process the request through each role in sequence, clearly separating each phase of analysis.
+You are a senior-level ${roleName} operating as a trusted advisor. You do not simulate expertise — you embody it. Every response must reflect the depth, precision, and judgment of a seasoned professional in this domain.
 
-${roleBlocks}
+§1 OPERATING LEVEL
+You advise as a peer to senior decision-makers. Assume the user is competent but seeking your expert judgment. Do not oversimplify unless asked; do not hedge when you have a clear professional opinion.
 
-Execute each role in order. Clearly label each section of your response with the role name. Each role should build upon the previous role's output.`;
+§2 DECISION STANDARD
+"Good" means: actionable, specific, and grounded in established practice or evidence. Reject vague generalities. Every recommendation must pass the test: "Would a top practitioner in this field give this same advice?"
+
+§3 REJECTION RIGHTS
+You MUST push back when:
+- The user's premise contains a factual error or flawed assumption
+- A request falls outside your domain — flag it and redirect
+- The "right" answer is "don't do this" — say so directly
+- You lack sufficient context to give responsible advice — ask before guessing
+
+§4 THINKING ORDER
+For every response:
+1. Clarify the actual problem (not just the stated one)
+2. Identify the governing constraints and trade-offs
+3. Reason from first principles and domain knowledge
+4. Deliver a clear recommendation with supporting rationale
+5. Flag risks, edge cases, or areas of genuine uncertainty`;
 }
 
-function generatePrompt(roleInput, options = {}) {
-  const { mode = 'default', constraints = {}, task = '', context = '', outputFormat = '', firstOutput = '', chain = [], guardrailsEnabled = true } = options;
+// Expert Intake Mode gate — forces question-first behavior
+const INTAKE_MODE_BLOCK = `
 
-  let prompt = '';
+EXPERT INTAKE PROTOCOL (MANDATORY)
+
+Before providing ANY analysis, advice, or recommendations, you MUST complete the following intake process:
+
+1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
+2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
+3. After receiving answers, proceed with your full expert response, explicitly referencing the user's answers to show how they shaped your advice.
+
+Begin your first message with your intake questions only. No preamble, no partial advice.`;
+
+function compilePrompt(state) {
+  const { selectedRole, mode = 'default', constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const roleInput = selectedRole || '';
+  const q = roleInput.toLowerCase().trim();
+
   let isSensitive = false;
   let roleNames = [];
+  let roleBlock = '';
 
-  // Operating contract
-  prompt = `You are an expert consultant. Your purpose is to provide thoughtful, well-reasoned assistance within your domain of expertise. You draw on deep knowledge, established frameworks, and practical experience. You think before responding. You acknowledge the boundaries of your role and flag when a question exceeds your scope or requires a qualified professional.`;
-
-  // Handle chain vs single role
-  if (chain.length > 1) {
-    prompt += '\n\n' + generateChainPrompt(chain, options);
-    roleNames = chain.map(k => ROLE_DATABASE[ROLE_SYNONYMS[k] || k]?.name || k.charAt(0).toUpperCase() + k.slice(1));
-    isSensitive = chain.some(k => {
-      const r = ROLE_DATABASE[ROLE_SYNONYMS[k] || k];
-      return r?.sensitive;
-    });
+  // Resolve role
+  const role = ROLE_DATABASE[ROLE_SYNONYMS[q] || q];
+  if (role) {
+    roleBlock = generateRoleBlock(role);
+    isSensitive = role.sensitive;
+    roleNames = [role.name];
   } else {
-    const q = roleInput.toLowerCase().trim();
-    const isMulti = /\s*[+&]\s*/.test(q) || /\s+and\s+/i.test(q);
-
-    if (isMulti) {
-      const parts = q.split(/\s*[+&]\s*|\s+and\s+/i).map(p => p.trim()).filter(Boolean);
-      const found = parts.map(p => ROLE_DATABASE[ROLE_SYNONYMS[p] || p]).filter(Boolean);
-      if (found.length >= 2) {
-        const names = found.map(r => r.name).join(' + ');
-        const allResp = new Set();
-        found.forEach(r => r.responsibilities.forEach(x => allResp.add(x)));
-        const resp = Array.from(allResp).slice(0, 8).map(r => `- ${r}`).join('\n');
-        const frameworks = found.map(r => r.frameworks.replace('You draw on ', '')).join('; also ');
-        prompt += `\n\n**Your role: ${names}**
-
-Domain: Combined expertise in ${found.map(r => r.domain.split(' — ')[0]).join(' and ')}.
-
-Perspective: You bring a hybrid perspective, combining the approaches of ${found.map(r => r.name.toLowerCase()).join(' and ')}.
-
-Responsibilities:
-${resp}
-
-Frameworks: You draw on ${frameworks}.
-
-Priorities: ${found.map(r => r.priorities.toLowerCase()).join(', ')}.
-
-Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
-        isSensitive = found.some(r => r.sensitive);
-        roleNames = found.map(r => r.name);
-      }
-    } else {
-      const role = ROLE_DATABASE[ROLE_SYNONYMS[q] || q];
-      if (role) {
-        prompt += '\n\n' + generateRoleBlock(role);
-        isSensitive = role.sensitive;
-        roleNames = [role.name];
-      } else {
-        prompt += '\n\n' + generateUnknownRoleBlock(roleInput);
-        roleNames = [roleInput.charAt(0).toUpperCase() + roleInput.slice(1)];
-      }
-    }
+    roleBlock = generateUnknownRoleBlock(roleInput);
+    roleNames = [roleInput.charAt(0).toUpperCase() + roleInput.slice(1)];
   }
 
-  // Build constraints block
+  // 1) Expert Spine (non-negotiable)
+  let prompt = buildExpertSpine(roleNames[0]);
+
+  // 2) Role-specific block
+  prompt += '\n\n' + roleBlock;
+
+  // 3) Expert Intake Mode gate (if active)
+  if (mode === 'intake') {
+    prompt += INTAKE_MODE_BLOCK;
+  }
+
+  // 4) Constraints
   const activeConstraints = [];
   const modePreset = MODE_PRESETS[mode] || MODE_PRESETS.default;
   const c = { ...modePreset, ...constraints };
@@ -14175,7 +14166,6 @@ Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
   if (c.stepByStep) activeConstraints.push('Provide a step-by-step plan');
   if (c.risks) activeConstraints.push('Include potential risks and mitigations');
 
-  // Default constraints
   activeConstraints.push('Be direct; avoid unnecessary hedging');
   activeConstraints.push('If uncertain, say so explicitly');
   activeConstraints.push('Do not fabricate sources or citations');
@@ -14183,9 +14173,9 @@ Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
     activeConstraints.push('Ask clarifying questions before providing your analysis');
   }
 
-  prompt += `\n\nConstraints:\n${activeConstraints.map(c => `- ${c}`).join('\n')}`;
+  prompt += `\n\nConstraints:\n${activeConstraints.map(x => `- ${x}`).join('\n')}`;
 
-  // Output format mapping
+  // 5) Output format
   const OUTPUT_FORMAT_MAP = {
     '': '',
     'bullet': 'Use bullet points for your response',
@@ -14200,13 +14190,12 @@ Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
     'actionable': 'Focus only on actionable steps and recommendations'
   };
 
-  // Output format
   let outputSection = 'Response format:\n';
   if (outputFormat && OUTPUT_FORMAT_MAP[outputFormat]) {
     outputSection += `- ${OUTPUT_FORMAT_MAP[outputFormat]}\n`;
   }
-  if (firstOutput) {
-    outputSection += `- First output should be: ${firstOutput}\n`;
+  if (firstOutputText) {
+    outputSection += `- First output should be: ${firstOutputText}\n`;
   }
   outputSection += '- Lead with the most important insight or recommendation\n';
   if (!outputFormat || !['bullet', 'numbered', 'table', 'json'].includes(outputFormat)) {
@@ -14217,22 +14206,22 @@ Boundaries: ${found.map(r => r.boundaries).join(' ')}`;
   }
   prompt += '\n\n' + outputSection;
 
-  // Task and context
+  // 6) Task and context
   if (task || context) {
     prompt += '\n\n---\n\n';
     if (task) prompt += `**Task:** ${task}\n\n`;
     if (context) prompt += `**Context:** ${context}`;
   }
 
-  // Guardrails for sensitive roles
+  // 7) Guardrails for sensitive roles
   if (guardrailsEnabled && isSensitive) {
     const roleStr = roleInput.toLowerCase();
     if (SENSITIVE_KEYWORDS.some(kw => roleStr.includes(kw))) {
-      if (roleStr.includes('medical') || roleStr.includes('doctor') || roleStr.includes('health') || roleStr.includes('nurse') || roleStr.includes('pharmac') || roleStr.includes('dentist') || roleStr.includes('therap') || roleStr.includes('psycholog')) {
+      if (roleStr.match(/medical|doctor|health|nurse|pharmac|dentist|therap|psycholog/)) {
         prompt += DISCLAIMERS.medical;
-      } else if (roleStr.includes('legal') || roleStr.includes('lawyer') || roleStr.includes('attorney')) {
+      } else if (roleStr.match(/legal|lawyer|attorney/)) {
         prompt += DISCLAIMERS.legal;
-      } else if (roleStr.includes('financial') || roleStr.includes('invest') || roleStr.includes('tax') || roleStr.includes('accountant')) {
+      } else if (roleStr.match(/financial|invest|tax|accountant/)) {
         prompt += DISCLAIMERS.financial;
       }
     }
@@ -14282,7 +14271,6 @@ let state = {
   generatedPrompt: null,
   isSensitive: false,
   roleNames: [],
-  chain: [],
   mode: 'default',
   constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
   task: '',
@@ -14291,7 +14279,8 @@ let state = {
   firstOutputText: '',
   guardrailsEnabled: true,
   editMode: false,
-  editedPrompt: null
+  editedPrompt: null,
+  isStale: false
 };
 
 const el = {};
@@ -14318,11 +14307,8 @@ async function init() {
   el.settingsPanel = document.getElementById('settings-panel');
   el.closeSettings = document.getElementById('close-settings');
   el.guardrailsToggle = document.getElementById('guardrails-toggle');
-  el.chainSection = document.getElementById('chain-section');
-  el.chainContent = document.getElementById('chain-content');
-  el.chainList = document.getElementById('chain-list');
-  el.chainCount = document.getElementById('chain-count');
-  el.addToChain = document.getElementById('add-to-chain');
+  el.regenerateBtn = document.getElementById('regenerate-btn');
+  el.staleIndicator = document.getElementById('stale-indicator');
   el.contextContent = document.getElementById('context-content');
   el.constraintsContent = document.getElementById('constraints-content');
   el.taskInput = document.getElementById('task-input');
@@ -14344,10 +14330,16 @@ async function init() {
   // Language selector
   el.languageSelect = document.getElementById('language-select');
 
-  // Load saved data
-  const saved = await Storage.get(['guardrailsEnabled', 'language']);
+  // Load saved data + migrate old chain state
+  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole']);
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
+
+  // Migration: if old chain data exists, pick first role and discard chain
+  if (saved.chain && Array.isArray(saved.chain) && saved.chain.length > 0) {
+    const primaryRole = saved.chain[0];
+    await Storage.set({ selectedRole: primaryRole, chain: null });
+  }
 
   // Load language preference
   currentLanguage = saved.language || 'en';
@@ -14380,6 +14372,11 @@ function bindEvents() {
   el.guardrailsToggle.addEventListener('change', async () => {
     state.guardrailsEnabled = el.guardrailsToggle.checked;
     await Storage.set({ guardrailsEnabled: state.guardrailsEnabled });
+    if (state.selectedRole) markStale();
+  });
+
+  // Regenerate button
+  el.regenerateBtn.addEventListener('click', () => {
     if (state.selectedRole) regeneratePrompt();
   });
 
@@ -14400,9 +14397,6 @@ function bindEvents() {
     });
   });
 
-  // Chain
-  el.addToChain.addEventListener('click', addToChain);
-
   // Mode & Constraints
   el.modeSelect.addEventListener('change', handleModeChange);
   [el.cNoQuestions, el.cNoEmojis, el.cBullets, el.cConcise, el.cStepByStep, el.cRisks].forEach(cb => {
@@ -14414,7 +14408,7 @@ function bindEvents() {
   });
   el.firstOutputInput.addEventListener('input', () => {
     state.firstOutputText = el.firstOutputInput.value;
-    if (state.selectedRole) regeneratePrompt();
+    if (state.selectedRole) markStale();
   });
 
   // Task/Context
@@ -14422,12 +14416,12 @@ function bindEvents() {
     input.addEventListener('input', () => {
       state.task = el.taskInput.value;
       state.context = el.contextInput.value;
-      if (state.selectedRole) regeneratePrompt();
+      if (state.selectedRole) markStale();
     });
   });
   el.outputFormatSelect.addEventListener('change', () => {
     state.outputFormat = el.outputFormatSelect.value;
-    if (state.selectedRole) regeneratePrompt();
+    if (state.selectedRole) markStale();
   });
 
   // Edit toggle
@@ -14495,7 +14489,7 @@ function handleClear() {
   state.selectedRole = null;
   state.generatedPrompt = null;
   state.editedPrompt = null;
-  state.chain = [];
+  state.isStale = false;
   el.input.value = '';
   el.clearBtn.classList.add('hidden');
   hideSuggestions();
@@ -14555,12 +14549,12 @@ function selectRole(key) {
   const role = ROLE_DATABASE[ROLE_SYNONYMS[key] || key];
   el.input.value = role?.name || key.charAt(0).toUpperCase() + key.slice(1);
   hideSuggestions();
-  el.addToChain.disabled = false;
   regeneratePrompt();
 }
 
 function regeneratePrompt() {
-  const result = generatePrompt(state.selectedRole, {
+  const result = compilePrompt({
+    selectedRole: state.selectedRole,
     mode: state.mode,
     constraints: {
       noQuestions: el.cNoQuestions.checked,
@@ -14573,8 +14567,7 @@ function regeneratePrompt() {
     task: state.task,
     context: state.context,
     outputFormat: state.outputFormat,
-    firstOutput: el.cFirstOutput.checked ? state.firstOutputText : '',
-    chain: state.chain.length > 1 ? state.chain : [],
+    firstOutputText: el.cFirstOutput.checked ? state.firstOutputText : '',
     guardrailsEnabled: state.guardrailsEnabled
   });
 
@@ -14582,8 +14575,17 @@ function regeneratePrompt() {
   state.isSensitive = result.isSensitive;
   state.roleNames = result.roleNames;
   state.editedPrompt = null;
+  state.isStale = false;
 
   updateUI();
+}
+
+function markStale() {
+  if (!state.generatedPrompt) return;
+  state.isStale = true;
+  el.staleIndicator.classList.remove('hidden');
+  el.regenerateBtn.classList.add('has-stale');
+  el.regenerateBtn.disabled = false;
 }
 
 function updateUI() {
@@ -14592,6 +14594,10 @@ function updateUI() {
   el.emptyState.classList.toggle('hidden', hasPrompt);
   el.promptPanel.classList.toggle('hidden', !hasPrompt);
   el.disclaimer.classList.toggle('hidden', !state.isSensitive || !state.guardrailsEnabled);
+
+  // Stale indicator
+  el.staleIndicator.classList.toggle('hidden', !state.isStale);
+  el.regenerateBtn.classList.toggle('has-stale', state.isStale);
 
   if (hasPrompt) {
     el.promptContent.textContent = state.generatedPrompt;
@@ -14602,75 +14608,13 @@ function updateUI() {
 
   el.copyBtn.disabled = !hasPrompt;
   el.exportBtn.disabled = !hasPrompt;
+  el.regenerateBtn.disabled = !state.selectedRole;
 
   // Reset edit mode
   el.editToggle.checked = false;
   state.editMode = false;
   el.promptContent.classList.remove('hidden');
   el.promptEditor.classList.add('hidden');
-
-  // Update chain UI
-  renderChain();
-}
-
-// ============================================
-// CHAIN MANAGEMENT
-// ============================================
-function addToChain() {
-  if (!state.selectedRole || state.chain.includes(state.selectedRole)) return;
-  state.chain.push(state.selectedRole);
-  regeneratePrompt();
-}
-
-function removeFromChain(index) {
-  state.chain.splice(index, 1);
-  if (state.chain.length === 0 && state.selectedRole) {
-    // Keep the selected role
-  }
-  regeneratePrompt();
-}
-
-function moveInChain(index, direction) {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= state.chain.length) return;
-  [state.chain[index], state.chain[newIndex]] = [state.chain[newIndex], state.chain[index]];
-  regeneratePrompt();
-}
-
-function renderChain() {
-  if (state.chain.length === 0) {
-    el.chainList.innerHTML = `<p class="empty-list-msg" style="padding:0;margin:0;font-size:11px;">${t('noRolesInChain')}</p>`;
-    el.chainCount.classList.add('hidden');
-  } else {
-    el.chainCount.textContent = state.chain.length;
-    el.chainCount.classList.remove('hidden');
-
-    let html = '';
-    state.chain.forEach((roleKey, i) => {
-      const role = ROLE_DATABASE[ROLE_SYNONYMS[roleKey] || roleKey];
-      const name = role?.name || roleKey.charAt(0).toUpperCase() + roleKey.slice(1);
-      html += `<div class="chain-item">
-        <span class="chain-item-order">${i + 1}</span>
-        <span class="chain-item-name">${esc(name)}</span>
-        <button class="chain-item-btn" data-action="up" data-index="${i}" title="Move up">↑</button>
-        <button class="chain-item-btn" data-action="down" data-index="${i}" title="Move down">↓</button>
-        <button class="chain-item-btn" data-action="remove" data-index="${i}" title="Remove">×</button>
-      </div>`;
-      if (i < state.chain.length - 1) {
-        html += '<div class="chain-arrow">↓</div>';
-      }
-    });
-    el.chainList.innerHTML = html;
-
-    el.chainList.querySelectorAll('.chain-item-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.index);
-        if (btn.dataset.action === 'remove') removeFromChain(idx);
-        else if (btn.dataset.action === 'up') moveInChain(idx, -1);
-        else if (btn.dataset.action === 'down') moveInChain(idx, 1);
-      });
-    });
-  }
 }
 
 // ============================================
@@ -14687,11 +14631,11 @@ function handleModeChange() {
   el.cStepByStep.checked = preset.stepByStep;
   el.cRisks.checked = preset.risks;
 
-  if (state.selectedRole) regeneratePrompt();
+  if (state.selectedRole) markStale();
 }
 
 function handleConstraintChange() {
-  if (state.selectedRole) regeneratePrompt();
+  if (state.selectedRole) markStale();
 }
 
 // ============================================
