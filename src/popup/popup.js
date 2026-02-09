@@ -14119,16 +14119,37 @@ const TRANSLATIONS = {
     contextSection: 'Context',
     constraintsSection: 'Constraints',
 
-    // Mode toggles
-    modeIntakeLabel: 'Expert Intake',
-    modeIntakeHint: 'Ask clarifying questions first. No solutions until you answer.',
-    modeCollaborativeLabel: 'Collaborative',
-    modeCollaborativeHint: 'Work together iteratively. Draft, refine, and explore options.',
-    modeAbsoluteLabel: 'Absolute',
-    modeAbsoluteHint: 'Direct, blunt, zero filler. Maximum information density.',
-    modeExecutiveLabel: 'Executive Summary',
-    modeExecutiveHint: 'Bottom-line-up-front briefing. Key findings, risks, next steps.',
-    dualModeHint: 'Intake + Collaborative: questions first, collaboration after.',
+    // Mode toggles (keyed by mode ID)
+    mode_intake_label: 'Expert Intake',
+    mode_intake_hint: 'Ask clarifying questions first. No solutions until you answer.',
+    mode_collaborative_label: 'Collaborative',
+    mode_collaborative_hint: 'Work together iteratively. Draft, refine, and explore options.',
+    'mode_assume-defaults_label': 'Assume Reasonable Defaults',
+    'mode_assume-defaults_hint': 'Proceed without questions; state assumptions clearly.',
+    'mode_structured-output_label': 'Structured Output',
+    'mode_structured-output_hint': 'Use headings and bullet points with a clear hierarchy.',
+    mode_concise_label: 'Concise',
+    mode_concise_hint: 'Short, direct answers. Minimal explanation.',
+    'mode_deep-dive_label': 'Deep Dive',
+    'mode_deep-dive_hint': 'Thorough reasoning, edge cases, and alternatives.',
+    'mode_action-plan_label': 'Action Plan',
+    'mode_action-plan_hint': 'Convert advice into step-by-step execution tasks.',
+    mode_checklist_label: 'Checklist Only',
+    mode_checklist_hint: 'Output only a checklist. No narrative.',
+    'mode_evidence-citations_label': 'Evidence & Citations (No Fabrication)',
+    'mode_evidence-citations_hint': 'Use citations only when available; never invent sources.',
+    'mode_risk-compliance_label': 'Risk & Compliance Lens',
+    'mode_risk-compliance_hint': 'Flag risks, constraints, and compliance concerns early.',
+    'mode_decision-memo_label': 'Decision Memo',
+    'mode_decision-memo_hint': 'Write like an internal decision brief with options.',
+    'mode_generate-options_label': 'Generate Options',
+    'mode_generate-options_hint': 'Provide 3–7 distinct options with pros/cons.',
+    'mode_templates-examples_label': 'Templates & Examples',
+    'mode_templates-examples_hint': 'Include reusable templates and a filled example.',
+    mode_absolute_label: 'Absolute',
+    mode_absolute_hint: 'Direct, blunt, zero filler. Maximum information density.',
+    mode_executive_label: 'Executive Summary',
+    mode_executive_hint: 'Bottom-line-up-front briefing. Key findings, risks, next steps.',
 
     // Context fields
     taskLabel: 'Goal',
@@ -14199,16 +14220,37 @@ const TRANSLATIONS = {
     contextSection: 'Πλαισιο',
     constraintsSection: 'Περιορισμοι',
 
-    // Mode toggles
-    modeIntakeLabel: 'Εισαγωγή Ειδικού',
-    modeIntakeHint: 'Πρώτα διευκρινιστικές ερωτήσεις. Καμία λύση μέχρι να απαντήσετε.',
-    modeCollaborativeLabel: 'Συνεργατική',
-    modeCollaborativeHint: 'Δουλέψτε μαζί επαναληπτικά. Σχέδιο, βελτίωση, εξερεύνηση.',
-    modeAbsoluteLabel: 'Απόλυτη',
-    modeAbsoluteHint: 'Άμεση, ευθεία, χωρίς περιττά. Μέγιστη πυκνότητα πληροφορίας.',
-    modeExecutiveLabel: 'Εκτελεστική Περίληψη',
-    modeExecutiveHint: 'Συμπέρασμα πρώτα. Βασικά ευρήματα, κίνδυνοι, επόμενα βήματα.',
-    dualModeHint: 'Εισαγωγή + Συνεργατική: ερωτήσεις πρώτα, συνεργασία μετά.',
+    // Mode toggles (keyed by mode ID)
+    mode_intake_label: 'Εισαγωγή Ειδικού',
+    mode_intake_hint: 'Πρώτα διευκρινιστικές ερωτήσεις. Καμία λύση μέχρι να απαντήσετε.',
+    mode_collaborative_label: 'Συνεργατική',
+    mode_collaborative_hint: 'Δουλέψτε μαζί επαναληπτικά. Σχέδιο, βελτίωση, εξερεύνηση.',
+    'mode_assume-defaults_label': 'Λογικές Προεπιλογές',
+    'mode_assume-defaults_hint': 'Προχωρήστε χωρίς ερωτήσεις· δηλώστε τις υποθέσεις σας.',
+    'mode_structured-output_label': 'Δομημένη Έξοδος',
+    'mode_structured-output_hint': 'Επικεφαλίδες και κουκκίδες με σαφή ιεραρχία.',
+    mode_concise_label: 'Συνοπτικό',
+    mode_concise_hint: 'Σύντομες, άμεσες απαντήσεις. Ελάχιστη εξήγηση.',
+    'mode_deep-dive_label': 'Βαθιά Ανάλυση',
+    'mode_deep-dive_hint': 'Εξονυχιστική ανάλυση, ακραίες περιπτώσεις, εναλλακτικές.',
+    'mode_action-plan_label': 'Σχέδιο Δράσης',
+    'mode_action-plan_hint': 'Μετατροπή συμβουλών σε βήματα εκτέλεσης.',
+    mode_checklist_label: 'Μόνο Λίστα Ελέγχου',
+    mode_checklist_hint: 'Μόνο λίστα ελέγχου. Χωρίς αφήγηση.',
+    'mode_evidence-citations_label': 'Τεκμήρια & Παραπομπές',
+    'mode_evidence-citations_hint': 'Παραπομπές μόνο όταν υπάρχουν· μην εφευρίσκετε πηγές.',
+    'mode_risk-compliance_label': 'Κίνδυνοι & Συμμόρφωση',
+    'mode_risk-compliance_hint': 'Επισημάνετε κινδύνους και ζητήματα συμμόρφωσης νωρίς.',
+    'mode_decision-memo_label': 'Σημείωμα Απόφασης',
+    'mode_decision-memo_hint': 'Εσωτερική ενημέρωση απόφασης με επιλογές.',
+    'mode_generate-options_label': 'Δημιουργία Επιλογών',
+    'mode_generate-options_hint': 'Παρέχετε 3–7 επιλογές με πλεονεκτήματα/μειονεκτήματα.',
+    'mode_templates-examples_label': 'Πρότυπα & Παραδείγματα',
+    'mode_templates-examples_hint': 'Επαναχρησιμοποιήσιμα πρότυπα και συμπληρωμένα παραδείγματα.',
+    mode_absolute_label: 'Απόλυτη',
+    mode_absolute_hint: 'Άμεση, ευθεία, χωρίς περιττά. Μέγιστη πυκνότητα πληροφορίας.',
+    mode_executive_label: 'Εκτελεστική Περίληψη',
+    mode_executive_hint: 'Συμπέρασμα πρώτα. Βασικά ευρήματα, κίνδυνοι, επόμενα βήματα.',
 
     // Context fields (labels displayed uppercase via CSS - no accents)
     taskLabel: 'Στοχος',
@@ -14281,16 +14323,15 @@ function applyTranslations() {
   // Search
   document.getElementById('role-input').placeholder = t('searchPlaceholder');
 
-  // Mode toggles
-  document.querySelector('#mode-intake').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeIntakeLabel');
-  document.querySelector('#mode-intake').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeIntakeHint');
-  document.querySelector('#mode-collaborative').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeCollaborativeLabel');
-  document.querySelector('#mode-collaborative').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeCollaborativeHint');
-  document.querySelector('#mode-absolute').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeAbsoluteLabel');
-  document.querySelector('#mode-absolute').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeAbsoluteHint');
-  document.querySelector('#mode-executive').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeExecutiveLabel');
-  document.querySelector('#mode-executive').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeExecutiveHint');
-  document.getElementById('dual-mode-hint').textContent = t('dualModeHint');
+  // Mode toggles (data-driven)
+  document.querySelectorAll('[data-mode]').forEach(cb => {
+    const modeId = cb.dataset.mode;
+    const container = cb.closest('.mode-toggle');
+    const labelKey = `mode_${modeId}_label`;
+    const hintKey = `mode_${modeId}_hint`;
+    container.querySelector('.mode-toggle-label').textContent = t(labelKey);
+    container.querySelector('.mode-toggle-hint').textContent = t(hintKey);
+  });
 
   // Sections
   document.querySelector('[data-toggle="modes-content"]').querySelector('span:first-child').textContent = t('modesSection');
@@ -14504,83 +14545,71 @@ For every response:
 5. Flag risks, edge cases, or areas of genuine uncertainty`;
 }
 
-// Expert Intake Mode gate — forces question-first behavior
-const INTAKE_MODE_BLOCK = `
+// ============================================
+// MODE SYSTEM
+// ============================================
 
-EXPERT INTAKE PROTOCOL (MANDATORY)
+// Ordered registry of all modes (determines UI order and deterministic append order)
+const MODE_REGISTRY = [
+  { id: 'intake', label: 'Expert Intake', hint: 'Ask clarifying questions first. No solutions until you answer.' },
+  { id: 'collaborative', label: 'Collaborative', hint: 'Work together iteratively. Draft, refine, and explore options.' },
+  { id: 'assume-defaults', label: 'Assume Reasonable Defaults', hint: 'Proceed without questions; state assumptions clearly.' },
+  { id: 'structured-output', label: 'Structured Output', hint: 'Use headings and bullet points with a clear hierarchy.' },
+  { id: 'concise', label: 'Concise', hint: 'Short, direct answers. Minimal explanation.' },
+  { id: 'deep-dive', label: 'Deep Dive', hint: 'Thorough reasoning, edge cases, and alternatives.' },
+  { id: 'action-plan', label: 'Action Plan', hint: 'Convert advice into step-by-step execution tasks.' },
+  { id: 'checklist', label: 'Checklist Only', hint: 'Output only a checklist. No narrative.' },
+  { id: 'evidence-citations', label: 'Evidence & Citations (No Fabrication)', hint: 'Use citations only when available; never invent sources.' },
+  { id: 'risk-compliance', label: 'Risk & Compliance Lens', hint: 'Flag risks, constraints, and compliance concerns early.' },
+  { id: 'decision-memo', label: 'Decision Memo', hint: 'Write like an internal decision brief with options.' },
+  { id: 'generate-options', label: 'Generate Options', hint: 'Provide 3–7 distinct options with pros/cons.' },
+  { id: 'templates-examples', label: 'Templates & Examples', hint: 'Include reusable templates and a filled example.' },
+  { id: 'absolute', label: 'Absolute', hint: 'Direct, blunt, zero filler. Maximum information density.' },
+  { id: 'executive', label: 'Executive Summary', hint: 'Bottom-line-up-front briefing. Key findings, risks, next steps.' }
+];
 
-Before providing ANY analysis, advice, or recommendations, you MUST complete the following intake process:
+// Prompt blocks keyed by mode ID
+const MODE_BLOCKS = {
+  intake: `\n\nEXPERT INTAKE PROTOCOL (MANDATORY)\n\nBefore providing ANY analysis, advice, or recommendations, you MUST complete the following intake process:\n\n1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.\n2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.\n3. After receiving answers, proceed with your full expert response, explicitly referencing the user's answers to show how they shaped your advice.\n\nBegin your first message with your intake questions only. No preamble, no partial advice.`,
 
-1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
-2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
-3. After receiving answers, proceed with your full expert response, explicitly referencing the user's answers to show how they shaped your advice.
+  collaborative: `\n\nCOLLABORATIVE MODE\n\nYou are working iteratively with the user. For your initial response:\n- Provide an immediate draft, proposal, or set of options — do not wait.\n- Present 2–3 alternative approaches when reasonable, explaining trade-offs.\n- Invite the user to refine, redirect, or drill deeper after each response.\n- Ask follow-up questions naturally during the conversation to sharpen your output.\n- Treat every exchange as a refinement cycle: draft → feedback → improve.`,
 
-Begin your first message with your intake questions only. No preamble, no partial advice.`;
+  'assume-defaults': `\n\nASSUME REASONABLE DEFAULTS\n\nDo not ask clarifying questions. Instead:\n- Proceed immediately with reasonable assumptions based on the information provided.\n- State your assumptions explicitly at the top of your response.\n- If an assumption is critical and could significantly change your advice, flag it as "Key assumption — verify this."`,
 
-// Collaborative Mode — iterative co-creation
-const COLLABORATIVE_MODE_BLOCK = `
+  'structured-output': `\n\nSTRUCTURED OUTPUT\n\nFormat every response with clear hierarchy:\n- Use descriptive headings (H2/H3) to organize major sections.\n- Use bullet points for lists and sub-points.\n- Use bold for key terms and emphasis.\n- Use numbered lists for sequential steps or ranked items.\n- Include a brief summary or TL;DR at the top if the response exceeds 200 words.`,
 
-COLLABORATIVE MODE
+  concise: `\n\nCONCISE MODE\n\n- Keep responses short and direct.\n- Lead with the answer; add explanation only if essential.\n- One sentence per point where possible.\n- No filler, no throat-clearing, no "great question" preambles.\n- Target: under 150 words unless the question demands more.`,
 
-You are working iteratively with the user. For your initial response:
-- Provide an immediate draft, proposal, or set of options — do not wait.
-- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
-- Invite the user to refine, redirect, or drill deeper after each response.
-- Ask follow-up questions naturally during the conversation to sharpen your output.
-- Treat every exchange as a refinement cycle: draft → feedback → improve.`;
+  'deep-dive': `\n\nDEEP DIVE MODE\n\n- Provide thorough, comprehensive analysis.\n- Explore edge cases, exceptions, and boundary conditions.\n- Present alternative perspectives and their merits.\n- Explain underlying reasoning and first principles.\n- Include relevant context that a non-specialist might miss.\n- Address "what could go wrong" scenarios proactively.`,
 
-// Dual mode: Intake first, then Collaborative
-const DUAL_MODE_BLOCK = `
+  'action-plan': `\n\nACTION PLAN MODE\n\nConvert your advice into a concrete execution plan:\n1. List specific, numbered action steps in chronological order.\n2. For each step, specify: what to do, who should do it (if applicable), and any dependencies.\n3. Flag any blockers or prerequisites.\n4. Include estimated effort or priority (high/medium/low) where relevant.\n5. End with "Immediate next action:" — the single most important first step.`,
 
-EXPERT INTAKE PROTOCOL (MANDATORY — PHASE 1)
+  checklist: `\n\nCHECKLIST ONLY\n\nOutput format: checklist only. No narrative, no explanation, no preamble.\n- Use a checkbox marker for each item.\n- Group items under clear headings if multiple categories exist.\n- Order items by priority or logical sequence.\n- Keep each item to one actionable line.`,
 
-Before providing ANY analysis, advice, or recommendations, you MUST complete the intake phase:
+  'evidence-citations': `\n\nEVIDENCE & CITATIONS MODE\n\n- Support claims with evidence, data, or established sources when available.\n- Cite specific sources, studies, or frameworks by name when you reference them.\n- NEVER fabricate citations, URLs, DOIs, or paper titles. If you cannot verify a source, say "I believe this is the case based on general domain knowledge, but I cannot cite a specific source."\n- When no sources are available, explicitly state: "No specific sources provided — this is based on domain expertise."`,
 
-1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
-2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
-3. Wait for the user's answers before proceeding to Phase 2.
+  'risk-compliance': `\n\nRISK & COMPLIANCE LENS\n\nFor every recommendation or analysis:\n- Identify risks early (technical, legal, financial, reputational, operational).\n- Rate each risk: likelihood (high/medium/low) × impact (high/medium/low).\n- Propose specific mitigations for each significant risk.\n- Flag any regulatory, compliance, or policy constraints.\n- Note assumptions that, if wrong, would change the risk profile.`,
 
-Begin your first message with your intake questions only. No preamble, no partial advice.
+  'decision-memo': `\n\nDECISION MEMO FORMAT\n\nStructure your response as an internal decision brief:\n1. **Context:** What situation or question prompted this?\n2. **Options:** Present 2–4 distinct options with pros/cons for each.\n3. **Recommendation:** Your recommended option with clear rationale.\n4. **Risks:** Key risks of the recommended path.\n5. **Next Step:** The single concrete action to move forward.`,
 
-COLLABORATIVE REFINEMENT (PHASE 2 — after user answers)
+  'generate-options': `\n\nGENERATE OPTIONS MODE\n\nProvide 3–7 distinct options (never fewer than 3):\n- Label each option clearly (Option A, Option B, etc.).\n- For each option, include: brief description, pros, cons, and best-fit scenario.\n- End with your recommended option and why.\n- If options naturally cluster, group them (e.g., conservative vs. aggressive approaches).`,
 
-Once the user has answered your intake questions:
-- Provide an initial draft or set of options informed by their answers.
-- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
-- Invite the user to refine, redirect, or drill deeper.
-- Continue iteratively: draft → feedback → improve.`;
+  'templates-examples': `\n\nTEMPLATES & EXAMPLES MODE\n\n- Include at least one reusable template that the user can copy and adapt.\n- Provide a filled-in example showing the template in use with realistic data.\n- Mark template placeholders clearly with [BRACKETS] or <angle brackets>.\n- Add brief annotation for non-obvious fields.`,
 
-// Absolute Mode — blunt, no-fluff communication
-const ABSOLUTE_MODE_BLOCK = `
+  absolute: `\n\nABSOLUTE MODE\n\nCommunication parameters:\n- Be direct and blunt. Zero hedging, zero filler, zero pleasantries.\n- State your professional opinion as a clear position, not a suggestion.\n- If something is wrong, say it plainly. If something will fail, say so.\n- No "it depends" without immediately following with your best judgment given available information.\n- Compress your response to maximum information density. Every sentence must earn its place.`,
 
-ABSOLUTE MODE
+  executive: `\n\nEXECUTIVE SUMMARY MODE\n\nStructure every response as an executive briefing:\n1. **Bottom Line Up Front (BLUF):** Lead with your key conclusion or recommendation in 1–2 sentences.\n2. **Key Findings:** 3–5 bullet points covering the most important points.\n3. **Recommendation:** Your specific, actionable recommendation.\n4. **Risks & Considerations:** Brief list of key risks or trade-offs.\n5. **Next Steps:** 2–3 concrete next actions.\n\nKeep total response under 300 words unless the user requests more detail.`
+};
 
-Communication parameters:
-- Be direct and blunt. Zero hedging, zero filler, zero pleasantries.
-- State your professional opinion as a clear position, not a suggestion.
-- If something is wrong, say it plainly. If something will fail, say so.
-- No "it depends" without immediately following with your best judgment given available information.
-- Compress your response to maximum information density. Every sentence must earn its place.`;
+// Special combined block: Intake + Collaborative (dual-phase)
+const DUAL_MODE_BLOCK = `\n\nEXPERT INTAKE PROTOCOL (MANDATORY — PHASE 1)\n\nBefore providing ANY analysis, advice, or recommendations, you MUST complete the intake phase:\n\n1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.\n2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.\n3. Wait for the user's answers before proceeding to Phase 2.\n\nBegin your first message with your intake questions only. No preamble, no partial advice.\n\nCOLLABORATIVE REFINEMENT (PHASE 2 — after user answers)\n\nOnce the user has answered your intake questions:\n- Provide an initial draft or set of options informed by their answers.\n- Present 2–3 alternative approaches when reasonable, explaining trade-offs.\n- Invite the user to refine, redirect, or drill deeper.\n- Continue iteratively: draft → feedback → improve.`;
 
-// Executive Summary Mode — structured executive briefing
-const EXECUTIVE_MODE_BLOCK = `
-
-EXECUTIVE SUMMARY MODE
-
-Structure every response as an executive briefing:
-1. **Bottom Line Up Front (BLUF):** Lead with your key conclusion or recommendation in 1–2 sentences.
-2. **Key Findings:** 3–5 bullet points covering the most important points.
-3. **Recommendation:** Your specific, actionable recommendation.
-4. **Risks & Considerations:** Brief list of key risks or trade-offs.
-5. **Next Steps:** 2–3 concrete next actions.
-
-Keep total response under 300 words unless the user requests more detail.`;
+// Special combined block: Concise + Deep Dive
+const CONCISE_DEEP_DIVE_BLOCK = `\n\nCONCISE SUMMARY + DEEP DIVE\n\nStructure:\n1. Start with a brief summary (2–3 sentences capturing the key takeaway).\n2. Follow with thorough analysis: reasoning, edge cases, alternatives, and risks.\n3. Use a clear "--- Detail below ---" separator between the summary and the deep analysis.`;
 
 function compilePrompt(state) {
-  const { selectedRole, intakeMode = false, modes = {}, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
-  const collaborativeMode = modes.collaborative || false;
-  const absoluteMode = modes.absolute || false;
-  const executiveMode = modes.executive || false;
+  const { selectedRole, enabledModes = [], constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const modes = new Set(enabledModes);
   const roleInput = selectedRole || '';
   const q = roleInput.toLowerCase().trim();
 
@@ -14605,22 +14634,47 @@ function compilePrompt(state) {
   // 2) Role-specific block
   prompt += '\n\n' + roleBlock;
 
-  // 3) Mode blocks
-  // Intake + Collaborative have a special combined block
-  if (intakeMode && collaborativeMode) {
+  // 3) Mode blocks — deterministic order with special interactions
+  const hasIntake = modes.has('intake');
+  const hasCollaborative = modes.has('collaborative');
+  const hasAssumeDefaults = modes.has('assume-defaults');
+  const hasConcise = modes.has('concise');
+  const hasDeepDive = modes.has('deep-dive');
+
+  // Intake + Collaborative → special dual-phase block
+  if (hasIntake && hasCollaborative) {
     prompt += DUAL_MODE_BLOCK;
-  } else if (intakeMode) {
-    prompt += INTAKE_MODE_BLOCK;
-  } else if (collaborativeMode) {
-    prompt += COLLABORATIVE_MODE_BLOCK;
+  } else if (hasIntake) {
+    prompt += MODE_BLOCKS['intake'];
+  } else if (hasCollaborative) {
+    prompt += MODE_BLOCKS['collaborative'];
   }
 
-  // Absolute and Executive modes are additive
-  if (absoluteMode) {
-    prompt += ABSOLUTE_MODE_BLOCK;
+  // Assume Defaults — suppressed when Intake is active
+  if (hasAssumeDefaults && !hasIntake) {
+    prompt += MODE_BLOCKS['assume-defaults'];
   }
-  if (executiveMode) {
-    prompt += EXECUTIVE_MODE_BLOCK;
+
+  // Structured Output (additive)
+  if (modes.has('structured-output')) {
+    prompt += MODE_BLOCKS['structured-output'];
+  }
+
+  // Concise + Deep Dive → combined block; otherwise individual
+  if (hasConcise && hasDeepDive) {
+    prompt += CONCISE_DEEP_DIVE_BLOCK;
+  } else if (hasConcise) {
+    prompt += MODE_BLOCKS['concise'];
+  } else if (hasDeepDive) {
+    prompt += MODE_BLOCKS['deep-dive'];
+  }
+
+  // Remaining additive modes in registry order
+  const handledModes = new Set(['intake', 'collaborative', 'assume-defaults', 'structured-output', 'concise', 'deep-dive']);
+  for (const modeEntry of MODE_REGISTRY) {
+    if (modes.has(modeEntry.id) && !handledModes.has(modeEntry.id)) {
+      prompt += MODE_BLOCKS[modeEntry.id];
+    }
   }
 
   // 4) Constraints
@@ -14734,8 +14788,7 @@ let state = {
   generatedPrompt: null,
   isSensitive: false,
   roleNames: [],
-  intakeMode: false,
-  modes: { collaborative: false, absolute: false, executive: false },
+  enabledModes: [],
   constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
   task: '',
   context: '',
@@ -14773,11 +14826,11 @@ async function init() {
   el.guardrailsToggle = document.getElementById('guardrails-toggle');
   el.regenerateBtn = document.getElementById('regenerate-btn');
   el.staleIndicator = document.getElementById('stale-indicator');
-  el.modeIntake = document.getElementById('mode-intake');
-  el.modeCollaborative = document.getElementById('mode-collaborative');
-  el.modeAbsolute = document.getElementById('mode-absolute');
-  el.modeExecutive = document.getElementById('mode-executive');
-  el.dualModeHint = document.getElementById('dual-mode-hint');
+  el.modeToggles = {};
+  document.querySelectorAll('[data-mode]').forEach(cb => {
+    el.modeToggles[cb.dataset.mode] = cb;
+  });
+  el.modeConflictHint = document.getElementById('mode-conflict-hint');
   el.contextContent = document.getElementById('context-content');
   el.constraintsContent = document.getElementById('constraints-content');
   el.taskInput = document.getElementById('task-input');
@@ -14799,7 +14852,7 @@ async function init() {
   el.languageSelect = document.getElementById('language-select');
 
   // Load saved data + migrate old state
-  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole', 'intakeMode', 'modes', 'collaborativeMode']);
+  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole', 'enabledModes', 'intakeMode', 'modes', 'collaborativeMode']);
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
 
@@ -14809,22 +14862,28 @@ async function init() {
     await Storage.set({ selectedRole: primaryRole, chain: null });
   }
 
-  // Restore mode toggles
-  state.intakeMode = saved.intakeMode === true;
-
-  // Migration: if old collaborativeMode exists, move it into modes object
-  if (saved.collaborativeMode === true && !saved.modes) {
-    state.modes = { collaborative: true, absolute: false, executive: false };
-    await Storage.set({ modes: state.modes, collaborativeMode: null });
-  } else if (saved.modes && typeof saved.modes === 'object') {
-    state.modes = { collaborative: !!saved.modes.collaborative, absolute: !!saved.modes.absolute, executive: !!saved.modes.executive };
+  // Restore enabledModes — or migrate from old format
+  if (Array.isArray(saved.enabledModes)) {
+    state.enabledModes = saved.enabledModes;
+  } else {
+    // Migration from old intakeMode + modes/collaborativeMode
+    const migrated = [];
+    if (saved.intakeMode === true) migrated.push('intake');
+    if (saved.collaborativeMode === true) migrated.push('collaborative');
+    if (saved.modes && typeof saved.modes === 'object') {
+      if (saved.modes.collaborative && !migrated.includes('collaborative')) migrated.push('collaborative');
+      if (saved.modes.absolute) migrated.push('absolute');
+      if (saved.modes.executive) migrated.push('executive');
+    }
+    state.enabledModes = migrated;
+    await Storage.set({ enabledModes: state.enabledModes, intakeMode: null, modes: null, collaborativeMode: null });
   }
 
-  el.modeIntake.checked = state.intakeMode;
-  el.modeCollaborative.checked = state.modes.collaborative;
-  el.modeAbsolute.checked = state.modes.absolute;
-  el.modeExecutive.checked = state.modes.executive;
-  updateDualModeHint();
+  // Apply mode toggles to checkboxes
+  Object.entries(el.modeToggles).forEach(([id, cb]) => {
+    cb.checked = state.enabledModes.includes(id);
+  });
+  updateModeConflictHint();
 
   // Load language preference
   currentLanguage = saved.language || 'en';
@@ -14882,11 +14941,10 @@ function bindEvents() {
     });
   });
 
-  // Mode toggles
-  el.modeIntake.addEventListener('change', handleModeToggle);
-  el.modeCollaborative.addEventListener('change', handleModeToggle);
-  el.modeAbsolute.addEventListener('change', handleModeToggle);
-  el.modeExecutive.addEventListener('change', handleModeToggle);
+  // Mode toggles (data-driven)
+  Object.values(el.modeToggles).forEach(cb => {
+    cb.addEventListener('change', handleModeToggle);
+  });
 
   // Constraints
   [el.cNoQuestions, el.cNoEmojis, el.cBullets, el.cConcise, el.cStepByStep, el.cRisks].forEach(cb => {
@@ -15045,8 +15103,7 @@ function selectRole(key) {
 function regeneratePrompt() {
   const result = compilePrompt({
     selectedRole: state.selectedRole,
-    intakeMode: state.intakeMode,
-    modes: state.modes,
+    enabledModes: state.enabledModes,
     constraints: {
       noQuestions: el.cNoQuestions.checked,
       noEmojis: el.cNoEmojis.checked,
@@ -15112,19 +15169,32 @@ function updateUI() {
 // MODE & CONSTRAINTS
 // ============================================
 async function handleModeToggle() {
-  state.intakeMode = el.modeIntake.checked;
-  state.modes = {
-    collaborative: el.modeCollaborative.checked,
-    absolute: el.modeAbsolute.checked,
-    executive: el.modeExecutive.checked
-  };
-  updateDualModeHint();
-  await Storage.set({ intakeMode: state.intakeMode, modes: state.modes });
+  // Read all mode toggle states
+  state.enabledModes = Object.entries(el.modeToggles)
+    .filter(([id, cb]) => cb.checked)
+    .map(([id]) => id);
+
+  // Conflict: Intake overrides Assume Defaults — auto-uncheck in UI
+  if (state.enabledModes.includes('intake') && state.enabledModes.includes('assume-defaults')) {
+    el.modeToggles['assume-defaults'].checked = false;
+    state.enabledModes = state.enabledModes.filter(m => m !== 'assume-defaults');
+  }
+
+  updateModeConflictHint();
+  await Storage.set({ enabledModes: state.enabledModes });
   if (state.selectedRole) markStale();
 }
 
-function updateDualModeHint() {
-  el.dualModeHint.classList.toggle('hidden', !(state.intakeMode && state.modes.collaborative));
+function updateModeConflictHint() {
+  const modes = new Set(state.enabledModes);
+  let hint = '';
+  if (modes.has('intake') && modes.has('collaborative')) {
+    hint = 'Intake + Collaborative: questions first, collaboration after.';
+  } else if (modes.has('concise') && modes.has('deep-dive')) {
+    hint = 'Concise + Deep Dive: brief summary up front, then full analysis.';
+  }
+  el.modeConflictHint.textContent = hint;
+  el.modeConflictHint.classList.toggle('hidden', !hint);
 }
 
 function handleConstraintChange() {

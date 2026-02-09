@@ -336,12 +336,6 @@ body {
   background: var(--bg-hover);
 }
 
-/* Modes Section (always visible) */
-.modes-section {
-  padding: 12px 20px 8px;
-  border-bottom: 1px solid var(--border-color);
-}
-
 .mode-toggle-row {
   display: flex;
   flex-direction: column;
