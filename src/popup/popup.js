@@ -10223,12 +10223,18 @@ const TRANSLATIONS = {
     noMatches: 'No matches — press Enter to use anyway',
 
     // Sections
-    roleChain: 'Role Chain',
-    taskContext: 'Task & Context',
-    modeConstraints: 'Mode & Constraints',
+    contextSection: 'Context',
+    constraintsSection: 'Constraints',
 
-    // Task & Context fields
-    taskLabel: 'Task / Goal',
+    // Mode toggles
+    modeIntakeLabel: 'Expert Intake',
+    modeIntakeHint: 'Ask clarifying questions first. No solutions until you answer.',
+    modeCollaborativeLabel: 'Collaborative',
+    modeCollaborativeHint: 'Work together iteratively. Draft, refine, and explore options.',
+    dualModeHint: 'When both are on: questions first, collaboration after.',
+
+    // Context fields
+    taskLabel: 'Goal',
     taskPlaceholder: 'e.g., Review my landing page copy',
     contextLabel: 'Context',
     contextPlaceholder: 'e.g., B2B SaaS, targeting CTOs',
@@ -10246,14 +10252,6 @@ const TRANSLATIONS = {
     formatDetailed: 'Detailed analysis',
     formatComparison: 'Comparison/Pros & Cons',
     formatActionable: 'Actionable steps only',
-
-    // Mode & Constraints
-    modeLabel: 'Mode',
-    modeDefault: 'Default',
-    modeAbsolute: 'Absolute (blunt, no fluff)',
-    modeCollaborative: 'Collaborative (asks questions)',
-    modeIntake: 'Expert Intake (questions first)',
-    modeExecutive: 'Executive Summary',
 
     // Constraints
     noQuestions: 'No questions',
@@ -10300,12 +10298,18 @@ const TRANSLATIONS = {
     noMatches: 'Δεν βρέθηκαν αποτελέσματα — πατήστε Enter για χρήση',
 
     // Sections (displayed uppercase via CSS - no accents)
-    roleChain: 'Αλυσιδα Ρολων',
-    taskContext: 'Εργασια & Πλαισιο',
-    modeConstraints: 'Λειτουργια & Περιορισμοι',
+    contextSection: 'Πλαισιο',
+    constraintsSection: 'Περιορισμοι',
 
-    // Task & Context fields (labels displayed uppercase via CSS - no accents)
-    taskLabel: 'Εργασια / Στοχος',
+    // Mode toggles
+    modeIntakeLabel: 'Εισαγωγή Ειδικού',
+    modeIntakeHint: 'Πρώτα διευκρινιστικές ερωτήσεις. Καμία λύση μέχρι να απαντήσετε.',
+    modeCollaborativeLabel: 'Συνεργατική',
+    modeCollaborativeHint: 'Δουλέψτε μαζί επαναληπτικά. Σχέδιο, βελτίωση, εξερεύνηση.',
+    dualModeHint: 'Όταν είναι και τα δύο ενεργά: ερωτήσεις πρώτα, συνεργασία μετά.',
+
+    // Context fields (labels displayed uppercase via CSS - no accents)
+    taskLabel: 'Στοχος',
     taskPlaceholder: 'π.χ., Ανασκόπηση κειμένου landing page',
     contextLabel: 'Πλαισιο',
     contextPlaceholder: 'π.χ., B2B SaaS, στοχεύοντας CTOs',
@@ -10323,14 +10327,6 @@ const TRANSLATIONS = {
     formatDetailed: 'Λεπτομερής ανάλυση',
     formatComparison: 'Σύγκριση/Πλεονεκτήματα & Μειονεκτήματα',
     formatActionable: 'Μόνο ενέργειες',
-
-    // Mode & Constraints (label displayed uppercase via CSS - no accent)
-    modeLabel: 'Λειτουργια',
-    modeDefault: 'Προεπιλογή',
-    modeAbsolute: 'Απόλυτη (άμεση, χωρίς περιττά)',
-    modeCollaborative: 'Συνεργατική (κάνει ερωτήσεις)',
-    modeIntake: 'Εισαγωγή Ειδικού (ερωτήσεις πρώτα)',
-    modeExecutive: 'Εκτελεστική Περίληψη',
 
     // Constraints
     noQuestions: 'Χωρίς ερωτήσεις',
@@ -10383,11 +10379,18 @@ function applyTranslations() {
   // Search
   document.getElementById('role-input').placeholder = t('searchPlaceholder');
 
-  // Sections
-  document.querySelector('[data-toggle="context-content"]').querySelector('span:first-child').textContent = t('taskContext');
-  document.querySelector('[data-toggle="constraints-content"]').querySelector('span:first-child').textContent = t('modeConstraints');
+  // Mode toggles
+  document.querySelector('#mode-intake').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeIntakeLabel');
+  document.querySelector('#mode-intake').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeIntakeHint');
+  document.querySelector('#mode-collaborative').closest('.mode-toggle').querySelector('.mode-toggle-label').textContent = t('modeCollaborativeLabel');
+  document.querySelector('#mode-collaborative').closest('.mode-toggle').querySelector('.mode-toggle-hint').textContent = t('modeCollaborativeHint');
+  document.getElementById('dual-mode-hint').textContent = t('dualModeHint');
 
-  // Task & Context
+  // Sections
+  document.querySelector('[data-toggle="context-content"]').querySelector('span:first-child').textContent = t('contextSection');
+  document.querySelector('[data-toggle="constraints-content"]').querySelector('span:first-child').textContent = t('constraintsSection');
+
+  // Context
   document.querySelector('label[for="task-input"]').textContent = t('taskLabel');
   document.getElementById('task-input').placeholder = t('taskPlaceholder');
   document.querySelector('label[for="context-input"]').textContent = t('contextLabel');
@@ -10407,15 +10410,6 @@ function applyTranslations() {
   formatSelect.options[8].textContent = t('formatDetailed');
   formatSelect.options[9].textContent = t('formatComparison');
   formatSelect.options[10].textContent = t('formatActionable');
-
-  // Mode & Constraints
-  document.querySelector('label[for="mode-select"]').textContent = t('modeLabel');
-  const modeSelect = document.getElementById('mode-select');
-  modeSelect.options[0].textContent = t('modeDefault');
-  modeSelect.options[1].textContent = t('modeAbsolute');
-  modeSelect.options[2].textContent = t('modeCollaborative');
-  modeSelect.options[3].textContent = t('modeIntake');
-  modeSelect.options[4].textContent = t('modeExecutive');
 
   // Constraints
   document.querySelector('#c-no-questions').parentElement.querySelector('span').textContent = t('noQuestions');
@@ -10533,13 +10527,7 @@ const DISCLAIMERS = {
   financial: "\n\n⚠️ INFORMATIONAL ONLY: This does not constitute professional financial advice. Consult a qualified financial professional for decisions affecting your finances."
 };
 
-const MODE_PRESETS = {
-  default: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false },
-  absolute: { noQuestions: true, noEmojis: true, bullets: false, concise: true, stepByStep: false, risks: false },
-  collaborative: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
-  intake: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
-  executive: { noQuestions: true, noEmojis: true, bullets: true, concise: true, stepByStep: false, risks: true }
-};
+// Modes are now independent toggles (intake, collaborative) — no presets needed
 
 function generateRoleBlock(role) {
   const resp = role.responsibilities.map(r => `- ${r}`).join('\n');
@@ -10622,8 +10610,41 @@ Before providing ANY analysis, advice, or recommendations, you MUST complete the
 
 Begin your first message with your intake questions only. No preamble, no partial advice.`;
 
+// Collaborative Mode — iterative co-creation
+const COLLABORATIVE_MODE_BLOCK = `
+
+COLLABORATIVE MODE
+
+You are working iteratively with the user. For your initial response:
+- Provide an immediate draft, proposal, or set of options — do not wait.
+- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
+- Invite the user to refine, redirect, or drill deeper after each response.
+- Ask follow-up questions naturally during the conversation to sharpen your output.
+- Treat every exchange as a refinement cycle: draft → feedback → improve.`;
+
+// Dual mode: Intake first, then Collaborative
+const DUAL_MODE_BLOCK = `
+
+EXPERT INTAKE PROTOCOL (MANDATORY — PHASE 1)
+
+Before providing ANY analysis, advice, or recommendations, you MUST complete the intake phase:
+
+1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
+2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
+3. Wait for the user's answers before proceeding to Phase 2.
+
+Begin your first message with your intake questions only. No preamble, no partial advice.
+
+COLLABORATIVE REFINEMENT (PHASE 2 — after user answers)
+
+Once the user has answered your intake questions:
+- Provide an initial draft or set of options informed by their answers.
+- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
+- Invite the user to refine, redirect, or drill deeper.
+- Continue iteratively: draft → feedback → improve.`;
+
 function compilePrompt(state) {
-  const { selectedRole, mode = 'default', constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const { selectedRole, intakeMode = false, collaborativeMode = false, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
   const roleInput = selectedRole || '';
   const q = roleInput.toLowerCase().trim();
 
@@ -10648,15 +10669,18 @@ function compilePrompt(state) {
   // 2) Role-specific block
   prompt += '\n\n' + roleBlock;
 
-  // 3) Expert Intake Mode gate (if active)
-  if (mode === 'intake') {
+  // 3) Mode blocks: intake, collaborative, or both
+  if (intakeMode && collaborativeMode) {
+    prompt += DUAL_MODE_BLOCK;
+  } else if (intakeMode) {
     prompt += INTAKE_MODE_BLOCK;
+  } else if (collaborativeMode) {
+    prompt += COLLABORATIVE_MODE_BLOCK;
   }
 
   // 4) Constraints
   const activeConstraints = [];
-  const modePreset = MODE_PRESETS[mode] || MODE_PRESETS.default;
-  const c = { ...modePreset, ...constraints };
+  const c = { ...constraints };
 
   if (c.noQuestions) activeConstraints.push('Do not ask clarifying questions; work with what is provided');
   if (c.noEmojis) activeConstraints.push('Do not use emojis in your response');
@@ -10668,9 +10692,6 @@ function compilePrompt(state) {
   activeConstraints.push('Be direct; avoid unnecessary hedging');
   activeConstraints.push('If uncertain, say so explicitly');
   activeConstraints.push('Do not fabricate sources or citations');
-  if (!c.noQuestions && mode === 'collaborative') {
-    activeConstraints.push('Ask clarifying questions before providing your analysis');
-  }
 
   prompt += `\n\nConstraints:\n${activeConstraints.map(x => `- ${x}`).join('\n')}`;
 
@@ -10700,9 +10721,7 @@ function compilePrompt(state) {
   if (!outputFormat || !['bullet', 'numbered', 'table', 'json'].includes(outputFormat)) {
     outputSection += '- Use structured formatting (bullets, headers) when helpful\n';
   }
-  if (mode !== 'absolute') {
-    outputSection += '- End with a suggested next step or follow-up question if appropriate';
-  }
+  outputSection += '- End with a suggested next step or follow-up question if appropriate';
   prompt += '\n\n' + outputSection;
 
   // 6) Task and context
@@ -10770,7 +10789,8 @@ let state = {
   generatedPrompt: null,
   isSensitive: false,
   roleNames: [],
-  mode: 'default',
+  intakeMode: false,
+  collaborativeMode: false,
   constraints: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false, firstOutput: false },
   task: '',
   context: '',
@@ -10808,12 +10828,14 @@ async function init() {
   el.guardrailsToggle = document.getElementById('guardrails-toggle');
   el.regenerateBtn = document.getElementById('regenerate-btn');
   el.staleIndicator = document.getElementById('stale-indicator');
+  el.modeIntake = document.getElementById('mode-intake');
+  el.modeCollaborative = document.getElementById('mode-collaborative');
+  el.dualModeHint = document.getElementById('dual-mode-hint');
   el.contextContent = document.getElementById('context-content');
   el.constraintsContent = document.getElementById('constraints-content');
   el.taskInput = document.getElementById('task-input');
   el.contextInput = document.getElementById('context-input');
   el.outputFormatSelect = document.getElementById('output-format-select');
-  el.modeSelect = document.getElementById('mode-select');
   el.firstOutputGroup = document.getElementById('first-output-group');
   el.firstOutputInput = document.getElementById('first-output-input');
 
@@ -10829,8 +10851,8 @@ async function init() {
   // Language selector
   el.languageSelect = document.getElementById('language-select');
 
-  // Load saved data + migrate old chain state
-  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole']);
+  // Load saved data + migrate old state
+  const saved = await Storage.get(['guardrailsEnabled', 'language', 'chain', 'selectedRole', 'intakeMode', 'collaborativeMode']);
   state.guardrailsEnabled = saved.guardrailsEnabled !== false;
   el.guardrailsToggle.checked = state.guardrailsEnabled;
 
@@ -10839,6 +10861,13 @@ async function init() {
     const primaryRole = saved.chain[0];
     await Storage.set({ selectedRole: primaryRole, chain: null });
   }
+
+  // Restore mode toggles
+  state.intakeMode = saved.intakeMode === true;
+  state.collaborativeMode = saved.collaborativeMode === true;
+  el.modeIntake.checked = state.intakeMode;
+  el.modeCollaborative.checked = state.collaborativeMode;
+  updateDualModeHint();
 
   // Load language preference
   currentLanguage = saved.language || 'en';
@@ -10896,8 +10925,11 @@ function bindEvents() {
     });
   });
 
-  // Mode & Constraints
-  el.modeSelect.addEventListener('change', handleModeChange);
+  // Mode toggles
+  el.modeIntake.addEventListener('change', handleModeToggle);
+  el.modeCollaborative.addEventListener('change', handleModeToggle);
+
+  // Constraints
   [el.cNoQuestions, el.cNoEmojis, el.cBullets, el.cConcise, el.cStepByStep, el.cRisks].forEach(cb => {
     cb.addEventListener('change', handleConstraintChange);
   });
@@ -11054,7 +11086,8 @@ function selectRole(key) {
 function regeneratePrompt() {
   const result = compilePrompt({
     selectedRole: state.selectedRole,
-    mode: state.mode,
+    intakeMode: state.intakeMode,
+    collaborativeMode: state.collaborativeMode,
     constraints: {
       noQuestions: el.cNoQuestions.checked,
       noEmojis: el.cNoEmojis.checked,
@@ -11119,18 +11152,16 @@ function updateUI() {
 // ============================================
 // MODE & CONSTRAINTS
 // ============================================
-function handleModeChange() {
-  state.mode = el.modeSelect.value;
-  const preset = MODE_PRESETS[state.mode] || MODE_PRESETS.default;
-
-  el.cNoQuestions.checked = preset.noQuestions;
-  el.cNoEmojis.checked = preset.noEmojis;
-  el.cBullets.checked = preset.bullets;
-  el.cConcise.checked = preset.concise;
-  el.cStepByStep.checked = preset.stepByStep;
-  el.cRisks.checked = preset.risks;
-
+async function handleModeToggle() {
+  state.intakeMode = el.modeIntake.checked;
+  state.collaborativeMode = el.modeCollaborative.checked;
+  updateDualModeHint();
+  await Storage.set({ intakeMode: state.intakeMode, collaborativeMode: state.collaborativeMode });
   if (state.selectedRole) markStale();
+}
+
+function updateDualModeHint() {
+  el.dualModeHint.classList.toggle('hidden', !(state.intakeMode && state.collaborativeMode));
 }
 
 function handleConstraintChange() {

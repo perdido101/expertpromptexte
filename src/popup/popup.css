@@ -336,6 +336,94 @@ body {
   background: var(--bg-hover);
 }
 
+/* Modes Section (always visible) */
+.modes-section {
+  padding: 12px 20px 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mode-toggle-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mode-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mode-toggle:hover {
+  background: var(--bg-hover);
+}
+
+.mode-toggle input { display: none; }
+
+.mode-toggle-slider {
+  width: 36px;
+  min-width: 36px;
+  height: 20px;
+  background: var(--bg-active);
+  border-radius: 10px;
+  position: relative;
+  transition: background 0.2s;
+  margin-top: 1px;
+}
+
+.mode-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+
+.mode-toggle input:checked + .mode-toggle-slider {
+  background: var(--accent);
+}
+
+.mode-toggle input:checked + .mode-toggle-slider::after {
+  transform: translateX(16px);
+}
+
+.mode-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mode-toggle-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.mode-toggle-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.dual-mode-hint {
+  margin-top: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border-radius: 6px;
+  text-align: center;
+}
+
 /* Collapsible Sections */
 .collapsible-section {
   border-bottom: 1px solid var(--border-color);
