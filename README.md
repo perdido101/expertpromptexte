@@ -40,6 +40,7 @@ Toggle constraints that modify the generated prompt:
 - **Default**: Balanced, standard expert behavior
 - **Absolute**: Blunt, directive, no fluff, no questions
 - **Collaborative**: Asks clarifying questions first
+- **Expert Intake**: Forces the expert to ask 3–6 diagnostic questions before giving advice (distinct from Collaborative)
 - **Executive Summary**: Tight, structured summary with recommendations
 
 Modes pre-fill constraint settings but you can override them.
@@ -54,11 +55,11 @@ Add optional context to your prompt:
 - Toggle "Edit" to modify the generated prompt directly
 - Changes persist for the session until you regenerate
 
-#### 6. Multi-Role Chaining
-- Add multiple roles to create a workflow chain
-- Reorder roles with up/down arrows
-- The AI will execute each role in sequence
-- Example: Strategist → Copywriter → Editor
+#### 6. Regenerate Prompt
+- Changes to mode/constraints/context mark the output as "stale" (visual indicator)
+- Click **Regenerate Prompt** to recompile with updated settings
+- Selecting a new role auto-generates immediately
+- Copy and Export always use the latest generated output
 
 #### 7. Prompt History
 - Automatically saves last 50 generated prompts
@@ -88,7 +89,6 @@ The extension uses a feature flag system for future Pro gating:
 const FEATURE_FLAGS = {
   savedRoles: true,
   modes: true,
-  chaining: true,
   history: true,
   export: true,
   guardrails: true,
@@ -111,7 +111,9 @@ src/
 ├── data/
 │   ├── roles.js      # (reference) Role definitions
 │   ├── searchEngine.js
-│   └── promptGenerator.js
+│   └── promptGenerator.js  # compilePrompt() + Expert Spine
+tests/
+│   └── compilePrompt.test.js  # Node test harness
 public/
 ├── icon16.png
 ├── icon48.png
@@ -131,6 +133,41 @@ Uses `chrome.storage.local` for persistence:
 
 1. **Quick Start**: Just type a role and press Enter
 2. **Power User**: Expand sections to access modes, constraints, and context
-3. **Workflows**: Use chaining for multi-step analysis (e.g., Research → Analyze → Write)
-4. **Sensitive Topics**: Keep guardrails ON for medical/legal/financial roles
-5. **Presets**: Save commonly-used configurations for one-click access
+3. **Expert Intake**: Use "Expert Intake" mode to force diagnostic questions before advice
+4. **Regenerate**: Change settings freely, then click Regenerate when ready
+5. **Sensitive Topics**: Keep guardrails ON for medical/legal/financial roles
+6. **Presets**: Save commonly-used configurations for one-click access
+
+## What Changed (v2.0)
+
+### Expert Spine (non-removable operating contract)
+Every generated prompt now includes a structured **Expert Operating Contract** with four sections:
+1. **Operating Level** — peer-to-peer advisor stance
+2. **Decision Standard** — actionable, specific, practitioner-grade advice
+3. **Rejection Rights** — the expert pushes back on bad premises, scope violations, or insufficient context
+4. **Thinking Order** — structured reasoning: problem → constraints → first principles → recommendation → risks
+
+This replaces the generic "You are an expert consultant" boilerplate.
+
+### Role Chain Mode removed
+Multi-role chaining has been removed. If you had a chain saved, the first role is preserved as your primary role. Single-role prompts produce higher-quality, more focused output.
+
+### Expert Intake Mode added
+A new mode: **Expert Intake (questions first)**. When enabled, the expert MUST ask 3–6 high-leverage diagnostic questions (each with a "why it matters" explanation) before providing any advice. Distinct from Collaborative mode, which simply suggests the AI ask questions.
+
+### Regenerate Prompt button
+The prompt no longer auto-updates on every toggle. Change role/mode/constraints freely — the output shows a "stale" indicator — then click **Regenerate Prompt** to recompile. Selecting a new role still auto-generates immediately.
+
+### Tests
+Run `node tests/compilePrompt.test.js` to verify the prompt compiler (41 assertions).
+
+## 2-Minute Manual Test Checklist
+
+1. **Load extension** → open popup → search "philosopher" → select → verify prompt starts with "EXPERT OPERATING CONTRACT" and contains §1–§4
+2. **Change mode to "Expert Intake"** → see stale indicator appear → click **Regenerate** → verify prompt now contains "EXPERT INTAKE PROTOCOL (MANDATORY)" with "3–6 high-leverage diagnostic questions"
+3. **Change mode to "Collaborative"** → click Regenerate → verify intake protocol is GONE, constraint says "Ask clarifying questions before providing your analysis"
+4. **Toggle a constraint** (e.g., "Include risks") → see stale indicator → click Regenerate → verify "Include potential risks and mitigations" in constraints
+5. **Search "lawyer"** → select → verify prompt ends with "INFORMATIONAL ONLY" disclaimer and role is marked sensitive
+6. **Verify no "Role Chain" section** exists in the UI
+7. **Copy button** works → copies prompt to clipboard
+8. **Run tests**: `node tests/compilePrompt.test.js` → all 41 pass
