@@ -49,30 +49,6 @@ const DISCLAIMERS = {
 
 const SENSITIVE_KEYWORDS = ['legal', 'lawyer', 'attorney', 'medical', 'doctor'];
 
-const ABSOLUTE_MODE_BLOCK = `
-
-ABSOLUTE MODE
-
-Communication parameters:
-- Be direct and blunt. Zero hedging, zero filler, zero pleasantries.
-- State your professional opinion as a clear position, not a suggestion.
-- If something is wrong, say it plainly. If something will fail, say so.
-- No "it depends" without immediately following with your best judgment given available information.
-- Compress your response to maximum information density. Every sentence must earn its place.`;
-
-const EXECUTIVE_MODE_BLOCK = `
-
-EXECUTIVE SUMMARY MODE
-
-Structure every response as an executive briefing:
-1. **Bottom Line Up Front (BLUF):** Lead with your key conclusion or recommendation in 1–2 sentences.
-2. **Key Findings:** 3–5 bullet points covering the most important points.
-3. **Recommendation:** Your specific, actionable recommendation.
-4. **Risks & Considerations:** Brief list of key risks or trade-offs.
-5. **Next Steps:** 2–3 concrete next actions.
-
-Keep total response under 300 words unless the user requests more detail.`;
-
 const OUTPUT_FORMAT_MAP = {
   '': '',
   'bullet': 'Use bullet points for your response',
@@ -106,18 +82,6 @@ For every response:
 5. Flag risks, edge cases, or areas of genuine uncertainty`;
 }
 
-const INTAKE_MODE_BLOCK = `
-
-EXPERT INTAKE PROTOCOL (MANDATORY)
-
-Before providing ANY analysis, advice, or recommendations, you MUST complete the following intake process:
-
-1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
-2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
-3. After receiving answers, proceed with your full expert response, explicitly referencing the user's answers to show how they shaped your advice.
-
-Begin your first message with your intake questions only. No preamble, no partial advice.`;
-
 function generateRoleBlock(role) {
   const resp = role.responsibilities.map(r => `- ${r}`).join('\n');
   return `**Your role: ${role.name}**\n\nDomain: ${role.domain}\n\nPerspective: ${role.perspective}\n\nResponsibilities:\n${resp}\n\nFrameworks: ${role.frameworks}\n\nPriorities: ${role.priorities}\n\nBoundaries: ${role.boundaries}`;
@@ -128,42 +92,55 @@ function generateUnknownRoleBlock(roleName) {
   return `**Your role: ${cap}**\n\nDomain: ${cap} — providing expertise and guidance within this professional domain.`;
 }
 
-const COLLABORATIVE_MODE_BLOCK = `
+// MODE SYSTEM — mirrors popup.js
 
-COLLABORATIVE MODE
+const MODE_REGISTRY = [
+  { id: 'intake' }, { id: 'collaborative' }, { id: 'assume-defaults' },
+  { id: 'structured-output' }, { id: 'concise' }, { id: 'deep-dive' },
+  { id: 'action-plan' }, { id: 'checklist' }, { id: 'evidence-citations' },
+  { id: 'risk-compliance' }, { id: 'decision-memo' }, { id: 'generate-options' },
+  { id: 'templates-examples' }, { id: 'absolute' }, { id: 'executive' }
+];
 
-You are working iteratively with the user. For your initial response:
-- Provide an immediate draft, proposal, or set of options — do not wait.
-- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
-- Invite the user to refine, redirect, or drill deeper after each response.
-- Ask follow-up questions naturally during the conversation to sharpen your output.
-- Treat every exchange as a refinement cycle: draft → feedback → improve.`;
+const MODE_BLOCKS = {
+  intake: `\n\nEXPERT INTAKE PROTOCOL (MANDATORY)\n\nBefore providing ANY analysis, advice, or recommendations, you MUST complete the following intake process:\n\n1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.\n2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.\n3. After receiving answers, proceed with your full expert response, explicitly referencing the user's answers to show how they shaped your advice.\n\nBegin your first message with your intake questions only. No preamble, no partial advice.`,
 
-const DUAL_MODE_BLOCK = `
+  collaborative: `\n\nCOLLABORATIVE MODE\n\nYou are working iteratively with the user. For your initial response:\n- Provide an immediate draft, proposal, or set of options — do not wait.\n- Present 2–3 alternative approaches when reasonable, explaining trade-offs.\n- Invite the user to refine, redirect, or drill deeper after each response.\n- Ask follow-up questions naturally during the conversation to sharpen your output.\n- Treat every exchange as a refinement cycle: draft → feedback → improve.`,
 
-EXPERT INTAKE PROTOCOL (MANDATORY — PHASE 1)
+  'assume-defaults': `\n\nASSUME REASONABLE DEFAULTS\n\nDo not ask clarifying questions. Instead:\n- Proceed immediately with reasonable assumptions based on the information provided.\n- State your assumptions explicitly at the top of your response.\n- If an assumption is critical and could significantly change your advice, flag it as "Key assumption — verify this."`,
 
-Before providing ANY analysis, advice, or recommendations, you MUST complete the intake phase:
+  'structured-output': `\n\nSTRUCTURED OUTPUT\n\nFormat every response with clear hierarchy:\n- Use descriptive headings (H2/H3) to organize major sections.\n- Use bullet points for lists and sub-points.\n- Use bold for key terms and emphasis.\n- Use numbered lists for sequential steps or ranked items.\n- Include a brief summary or TL;DR at the top if the response exceeds 200 words.`,
 
-1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
-2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
-3. Wait for the user's answers before proceeding to Phase 2.
+  concise: `\n\nCONCISE MODE\n\n- Keep responses short and direct.\n- Lead with the answer; add explanation only if essential.\n- One sentence per point where possible.\n- No filler, no throat-clearing, no "great question" preambles.\n- Target: under 150 words unless the question demands more.`,
 
-Begin your first message with your intake questions only. No preamble, no partial advice.
+  'deep-dive': `\n\nDEEP DIVE MODE\n\n- Provide thorough, comprehensive analysis.\n- Explore edge cases, exceptions, and boundary conditions.\n- Present alternative perspectives and their merits.\n- Explain underlying reasoning and first principles.\n- Include relevant context that a non-specialist might miss.\n- Address "what could go wrong" scenarios proactively.`,
 
-COLLABORATIVE REFINEMENT (PHASE 2 — after user answers)
+  'action-plan': `\n\nACTION PLAN MODE\n\nConvert your advice into a concrete execution plan:\n1. List specific, numbered action steps in chronological order.\n2. For each step, specify: what to do, who should do it (if applicable), and any dependencies.\n3. Flag any blockers or prerequisites.\n4. Include estimated effort or priority (high/medium/low) where relevant.\n5. End with "Immediate next action:" — the single most important first step.`,
 
-Once the user has answered your intake questions:
-- Provide an initial draft or set of options informed by their answers.
-- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
-- Invite the user to refine, redirect, or drill deeper.
-- Continue iteratively: draft → feedback → improve.`;
+  checklist: `\n\nCHECKLIST ONLY\n\nOutput format: checklist only. No narrative, no explanation, no preamble.\n- Use a checkbox marker for each item.\n- Group items under clear headings if multiple categories exist.\n- Order items by priority or logical sequence.\n- Keep each item to one actionable line.`,
+
+  'evidence-citations': `\n\nEVIDENCE & CITATIONS MODE\n\n- Support claims with evidence, data, or established sources when available.\n- Cite specific sources, studies, or frameworks by name when you reference them.\n- NEVER fabricate citations, URLs, DOIs, or paper titles. If you cannot verify a source, say "I believe this is the case based on general domain knowledge, but I cannot cite a specific source."\n- When no sources are available, explicitly state: "No specific sources provided — this is based on domain expertise."`,
+
+  'risk-compliance': `\n\nRISK & COMPLIANCE LENS\n\nFor every recommendation or analysis:\n- Identify risks early (technical, legal, financial, reputational, operational).\n- Rate each risk: likelihood (high/medium/low) × impact (high/medium/low).\n- Propose specific mitigations for each significant risk.\n- Flag any regulatory, compliance, or policy constraints.\n- Note assumptions that, if wrong, would change the risk profile.`,
+
+  'decision-memo': `\n\nDECISION MEMO FORMAT\n\nStructure your response as an internal decision brief:\n1. **Context:** What situation or question prompted this?\n2. **Options:** Present 2–4 distinct options with pros/cons for each.\n3. **Recommendation:** Your recommended option with clear rationale.\n4. **Risks:** Key risks of the recommended path.\n5. **Next Step:** The single concrete action to move forward.`,
+
+  'generate-options': `\n\nGENERATE OPTIONS MODE\n\nProvide 3–7 distinct options (never fewer than 3):\n- Label each option clearly (Option A, Option B, etc.).\n- For each option, include: brief description, pros, cons, and best-fit scenario.\n- End with your recommended option and why.\n- If options naturally cluster, group them (e.g., conservative vs. aggressive approaches).`,
+
+  'templates-examples': `\n\nTEMPLATES & EXAMPLES MODE\n\n- Include at least one reusable template that the user can copy and adapt.\n- Provide a filled-in example showing the template in use with realistic data.\n- Mark template placeholders clearly with [BRACKETS] or <angle brackets>.\n- Add brief annotation for non-obvious fields.`,
+
+  absolute: `\n\nABSOLUTE MODE\n\nCommunication parameters:\n- Be direct and blunt. Zero hedging, zero filler, zero pleasantries.\n- State your professional opinion as a clear position, not a suggestion.\n- If something is wrong, say it plainly. If something will fail, say so.\n- No "it depends" without immediately following with your best judgment given available information.\n- Compress your response to maximum information density. Every sentence must earn its place.`,
+
+  executive: `\n\nEXECUTIVE SUMMARY MODE\n\nStructure every response as an executive briefing:\n1. **Bottom Line Up Front (BLUF):** Lead with your key conclusion or recommendation in 1–2 sentences.\n2. **Key Findings:** 3–5 bullet points covering the most important points.\n3. **Recommendation:** Your specific, actionable recommendation.\n4. **Risks & Considerations:** Brief list of key risks or trade-offs.\n5. **Next Steps:** 2–3 concrete next actions.\n\nKeep total response under 300 words unless the user requests more detail.`
+};
+
+const DUAL_MODE_BLOCK = `\n\nEXPERT INTAKE PROTOCOL (MANDATORY — PHASE 1)\n\nBefore providing ANY analysis, advice, or recommendations, you MUST complete the intake phase:\n\n1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.\n2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.\n3. Wait for the user's answers before proceeding to Phase 2.\n\nBegin your first message with your intake questions only. No preamble, no partial advice.\n\nCOLLABORATIVE REFINEMENT (PHASE 2 — after user answers)\n\nOnce the user has answered your intake questions:\n- Provide an initial draft or set of options informed by their answers.\n- Present 2–3 alternative approaches when reasonable, explaining trade-offs.\n- Invite the user to refine, redirect, or drill deeper.\n- Continue iteratively: draft → feedback → improve.`;
+
+const CONCISE_DEEP_DIVE_BLOCK = `\n\nCONCISE SUMMARY + DEEP DIVE\n\nStructure:\n1. Start with a brief summary (2–3 sentences capturing the key takeaway).\n2. Follow with thorough analysis: reasoning, edge cases, alternatives, and risks.\n3. Use a clear "--- Detail below ---" separator between the summary and the deep analysis.`;
 
 function compilePrompt(state) {
-  const { selectedRole, intakeMode = false, modes = {}, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
-  const collaborativeMode = modes.collaborative || false;
-  const absoluteMode = modes.absolute || false;
-  const executiveMode = modes.executive || false;
+  const { selectedRole, enabledModes = [], constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const modes = new Set(enabledModes);
   const roleInput = selectedRole || '';
   const q = roleInput.toLowerCase().trim();
 
@@ -184,19 +161,47 @@ function compilePrompt(state) {
   let prompt = buildExpertSpine(roleNames[0]);
   prompt += '\n\n' + roleBlock;
 
-  if (intakeMode && collaborativeMode) {
+  // Mode blocks — deterministic order with special interactions
+  const hasIntake = modes.has('intake');
+  const hasCollaborative = modes.has('collaborative');
+  const hasAssumeDefaults = modes.has('assume-defaults');
+  const hasConcise = modes.has('concise');
+  const hasDeepDive = modes.has('deep-dive');
+
+  // Intake + Collaborative → special dual-phase block
+  if (hasIntake && hasCollaborative) {
     prompt += DUAL_MODE_BLOCK;
-  } else if (intakeMode) {
-    prompt += INTAKE_MODE_BLOCK;
-  } else if (collaborativeMode) {
-    prompt += COLLABORATIVE_MODE_BLOCK;
+  } else if (hasIntake) {
+    prompt += MODE_BLOCKS['intake'];
+  } else if (hasCollaborative) {
+    prompt += MODE_BLOCKS['collaborative'];
   }
 
-  if (absoluteMode) {
-    prompt += ABSOLUTE_MODE_BLOCK;
+  // Assume Defaults — suppressed when Intake is active
+  if (hasAssumeDefaults && !hasIntake) {
+    prompt += MODE_BLOCKS['assume-defaults'];
   }
-  if (executiveMode) {
-    prompt += EXECUTIVE_MODE_BLOCK;
+
+  // Structured Output (additive)
+  if (modes.has('structured-output')) {
+    prompt += MODE_BLOCKS['structured-output'];
+  }
+
+  // Concise + Deep Dive → combined block; otherwise individual
+  if (hasConcise && hasDeepDive) {
+    prompt += CONCISE_DEEP_DIVE_BLOCK;
+  } else if (hasConcise) {
+    prompt += MODE_BLOCKS['concise'];
+  } else if (hasDeepDive) {
+    prompt += MODE_BLOCKS['deep-dive'];
+  }
+
+  // Remaining additive modes in registry order
+  const handledModes = new Set(['intake', 'collaborative', 'assume-defaults', 'structured-output', 'concise', 'deep-dive']);
+  for (const modeEntry of MODE_REGISTRY) {
+    if (modes.has(modeEntry.id) && !handledModes.has(modeEntry.id)) {
+      prompt += MODE_BLOCKS[modeEntry.id];
+    }
   }
 
   const activeConstraints = [];
@@ -290,7 +295,7 @@ console.log('\nUnknown role fallback:');
 // Test 4: Intake mode adds protocol
 console.log('\nIntake mode:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true });
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['intake'] });
   assert(result.prompt.includes('EXPERT INTAKE PROTOCOL (MANDATORY)'), 'intake protocol block present');
   assert(result.prompt.includes('3–6 high-leverage diagnostic questions'), 'intake specifies question count');
   assert(result.prompt.includes('Why this matters'), 'intake requires justification');
@@ -300,7 +305,7 @@ console.log('\nIntake mode:');
 // Test 5: Collaborative mode adds iterative block
 console.log('\nCollaborative mode:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', modes: { collaborative: true } });
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['collaborative'] });
   assert(result.prompt.includes('COLLABORATIVE MODE'), 'collaborative block present');
   assert(result.prompt.includes('immediate draft'), 'collaborative allows immediate output');
   assert(result.prompt.includes('refinement cycle'), 'collaborative is iterative');
@@ -310,7 +315,7 @@ console.log('\nCollaborative mode:');
 // Test 6: Dual mode (intake + collaborative) — intake first, then collaborative
 console.log('\nDual mode (intake + collaborative):');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, modes: { collaborative: true } });
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['intake', 'collaborative'] });
   assert(result.prompt.includes('PHASE 1'), 'dual mode has Phase 1');
   assert(result.prompt.includes('PHASE 2'), 'dual mode has Phase 2');
   assert(result.prompt.includes('intake questions only'), 'Phase 1 gates advice');
@@ -320,7 +325,7 @@ console.log('\nDual mode (intake + collaborative):');
   assert(phase1Pos < phase2Pos, 'Phase 1 comes before Phase 2');
 }
 
-// Test 6b: Neither mode enabled — no mode blocks
+// Test 7: No modes enabled — clean baseline
 console.log('\nNo modes enabled:');
 {
   const result = compilePrompt({ selectedRole: 'philosopher' });
@@ -329,55 +334,194 @@ console.log('\nNo modes enabled:');
   assert(!result.prompt.includes('PHASE 1'), 'no dual mode when modes off');
   assert(!result.prompt.includes('ABSOLUTE MODE'), 'no absolute when modes off');
   assert(!result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'no executive when modes off');
+  assert(!result.prompt.includes('ASSUME REASONABLE DEFAULTS'), 'no assume-defaults when modes off');
+  assert(!result.prompt.includes('CONCISE MODE'), 'no concise when modes off');
+  assert(!result.prompt.includes('DEEP DIVE MODE'), 'no deep-dive when modes off');
+  assert(!result.prompt.includes('ACTION PLAN MODE'), 'no action-plan when modes off');
+  assert(!result.prompt.includes('CHECKLIST ONLY'), 'no checklist when modes off');
 }
 
-// Test 6c: Absolute mode adds blunt block
+// Test 8: Assume Reasonable Defaults
+console.log('\nAssume Reasonable Defaults:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['assume-defaults'] });
+  assert(result.prompt.includes('ASSUME REASONABLE DEFAULTS'), 'assume-defaults block present');
+  assert(result.prompt.includes('State your assumptions explicitly'), 'instructs to state assumptions');
+  assert(result.prompt.includes('Do not ask clarifying questions'), 'forbids questions');
+}
+
+// Test 9: Assume Defaults suppressed when Intake is active
+console.log('\nIntake overrides Assume Defaults:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['intake', 'assume-defaults'] });
+  assert(result.prompt.includes('EXPERT INTAKE PROTOCOL'), 'intake present');
+  assert(!result.prompt.includes('ASSUME REASONABLE DEFAULTS'), 'assume-defaults suppressed by intake');
+}
+
+// Test 10: Structured Output
+console.log('\nStructured Output:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['structured-output'] });
+  assert(result.prompt.includes('STRUCTURED OUTPUT'), 'structured-output block present');
+  assert(result.prompt.includes('headings (H2/H3)'), 'specifies heading hierarchy');
+}
+
+// Test 11: Concise mode
+console.log('\nConcise mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['concise'] });
+  assert(result.prompt.includes('CONCISE MODE'), 'concise block present');
+  assert(result.prompt.includes('under 150 words'), 'concise targets word count');
+  assert(!result.prompt.includes('DEEP DIVE'), 'no deep-dive in concise-only');
+}
+
+// Test 12: Deep Dive mode
+console.log('\nDeep Dive mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['deep-dive'] });
+  assert(result.prompt.includes('DEEP DIVE MODE'), 'deep-dive block present');
+  assert(result.prompt.includes('edge cases'), 'deep-dive covers edge cases');
+  assert(!result.prompt.includes('CONCISE MODE'), 'no concise in deep-dive-only');
+}
+
+// Test 13: Concise + Deep Dive → combined block
+console.log('\nConcise + Deep Dive combined:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['concise', 'deep-dive'] });
+  assert(result.prompt.includes('CONCISE SUMMARY + DEEP DIVE'), 'combined block present');
+  assert(!result.prompt.includes('CONCISE MODE'), 'no standalone concise');
+  assert(!result.prompt.includes('DEEP DIVE MODE'), 'no standalone deep-dive');
+  assert(result.prompt.includes('brief summary'), 'combined has summary');
+  assert(result.prompt.includes('thorough analysis'), 'combined has deep analysis');
+}
+
+// Test 14: Action Plan mode
+console.log('\nAction Plan mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['action-plan'] });
+  assert(result.prompt.includes('ACTION PLAN MODE'), 'action-plan block present');
+  assert(result.prompt.includes('Immediate next action'), 'action-plan has next action');
+}
+
+// Test 15: Checklist Only mode
+console.log('\nChecklist Only mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['checklist'] });
+  assert(result.prompt.includes('CHECKLIST ONLY'), 'checklist block present');
+  assert(result.prompt.includes('No narrative'), 'checklist forbids narrative');
+}
+
+// Test 16: Evidence & Citations mode
+console.log('\nEvidence & Citations mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['evidence-citations'] });
+  assert(result.prompt.includes('EVIDENCE & CITATIONS MODE'), 'evidence-citations block present');
+  assert(result.prompt.includes('NEVER fabricate citations'), 'forbids fabrication');
+  assert(result.prompt.includes('domain expertise'), 'fallback to domain expertise');
+}
+
+// Test 17: Risk & Compliance Lens
+console.log('\nRisk & Compliance Lens:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['risk-compliance'] });
+  assert(result.prompt.includes('RISK & COMPLIANCE LENS'), 'risk-compliance block present');
+  assert(result.prompt.includes('likelihood'), 'has risk rating');
+  assert(result.prompt.includes('mitigations'), 'has mitigations');
+}
+
+// Test 18: Decision Memo mode
+console.log('\nDecision Memo mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['decision-memo'] });
+  assert(result.prompt.includes('DECISION MEMO FORMAT'), 'decision-memo block present');
+  assert(result.prompt.includes('Context:'), 'memo has context section');
+  assert(result.prompt.includes('Options:'), 'memo has options section');
+  assert(result.prompt.includes('Recommendation:'), 'memo has recommendation');
+  assert(result.prompt.includes('Risks:'), 'memo has risks');
+  assert(result.prompt.includes('Next Step:'), 'memo has next step');
+}
+
+// Test 19: Generate Options mode
+console.log('\nGenerate Options mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['generate-options'] });
+  assert(result.prompt.includes('GENERATE OPTIONS MODE'), 'generate-options block present');
+  assert(result.prompt.includes('3–7 distinct options'), 'requires 3-7 options');
+  assert(result.prompt.includes('pros, cons'), 'requires pros/cons');
+}
+
+// Test 20: Templates & Examples mode
+console.log('\nTemplates & Examples mode:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['templates-examples'] });
+  assert(result.prompt.includes('TEMPLATES & EXAMPLES MODE'), 'templates-examples block present');
+  assert(result.prompt.includes('reusable template'), 'includes template');
+  assert(result.prompt.includes('filled-in example'), 'includes filled example');
+}
+
+// Test 21: Absolute mode
 console.log('\nAbsolute mode:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', modes: { absolute: true } });
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['absolute'] });
   assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute mode block present');
   assert(result.prompt.includes('Zero hedging, zero filler'), 'absolute enforces bluntness');
   assert(result.prompt.includes('information density'), 'absolute enforces density');
-  assert(!result.prompt.includes('COLLABORATIVE MODE'), 'no collaborative in absolute-only');
 }
 
-// Test 6d: Executive mode adds briefing structure
-console.log('\nExecutive mode:');
+// Test 22: Executive Summary mode
+console.log('\nExecutive Summary mode:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', modes: { executive: true } });
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['executive'] });
   assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive mode block present');
   assert(result.prompt.includes('Bottom Line Up Front'), 'executive has BLUF');
   assert(result.prompt.includes('Key Findings'), 'executive has key findings');
   assert(result.prompt.includes('Next Steps'), 'executive has next steps');
 }
 
-// Test 6e: Absolute + Executive can combine
-console.log('\nAbsolute + Executive combined:');
+// Test 23: Multiple additive modes combine
+console.log('\nMultiple additive modes:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', modes: { absolute: true, executive: true } });
-  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present in combo');
-  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive present in combo');
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['absolute', 'executive', 'evidence-citations', 'risk-compliance'] });
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present');
+  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive present');
+  assert(result.prompt.includes('EVIDENCE & CITATIONS MODE'), 'evidence-citations present');
+  assert(result.prompt.includes('RISK & COMPLIANCE LENS'), 'risk-compliance present');
 }
 
-// Test 6f: Intake + Absolute (no special dual block)
-console.log('\nIntake + Absolute:');
-{
-  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, modes: { absolute: true } });
-  assert(result.prompt.includes('EXPERT INTAKE PROTOCOL (MANDATORY)'), 'intake present');
-  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present alongside intake');
-  assert(!result.prompt.includes('PHASE 1'), 'no dual mode block without collaborative');
-}
-
-// Test 6g: All modes enabled
+// Test 24: All modes enabled
 console.log('\nAll modes enabled:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, modes: { collaborative: true, absolute: true, executive: true } });
-  assert(result.prompt.includes('PHASE 1'), 'dual mode block from intake+collaborative');
-  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute appended');
-  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive appended');
+  const allModes = MODE_REGISTRY.map(m => m.id);
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: allModes });
+  // intake + collaborative → dual block
+  assert(result.prompt.includes('PHASE 1'), 'dual mode from intake+collaborative');
+  // assume-defaults suppressed by intake
+  assert(!result.prompt.includes('ASSUME REASONABLE DEFAULTS'), 'assume-defaults suppressed');
+  // concise + deep-dive → combined
+  assert(result.prompt.includes('CONCISE SUMMARY + DEEP DIVE'), 'concise+deep-dive combined');
+  // remaining modes present
+  assert(result.prompt.includes('ACTION PLAN MODE'), 'action-plan present');
+  assert(result.prompt.includes('CHECKLIST ONLY'), 'checklist present');
+  assert(result.prompt.includes('EVIDENCE & CITATIONS MODE'), 'evidence-citations present');
+  assert(result.prompt.includes('RISK & COMPLIANCE LENS'), 'risk-compliance present');
+  assert(result.prompt.includes('DECISION MEMO FORMAT'), 'decision-memo present');
+  assert(result.prompt.includes('GENERATE OPTIONS MODE'), 'generate-options present');
+  assert(result.prompt.includes('TEMPLATES & EXAMPLES MODE'), 'templates-examples present');
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present');
+  assert(result.prompt.includes('EXECUTIVE SUMMARY MODE'), 'executive present');
+  assert(result.prompt.includes('STRUCTURED OUTPUT'), 'structured-output present');
 }
 
-// Test 7: Task and context included
+// Test 25: Intake + Absolute (no special dual block)
+console.log('\nIntake + Absolute:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['intake', 'absolute'] });
+  assert(result.prompt.includes('EXPERT INTAKE PROTOCOL (MANDATORY)'), 'intake present');
+  assert(result.prompt.includes('ABSOLUTE MODE'), 'absolute present alongside intake');
+  assert(!result.prompt.includes('PHASE 1'), 'no dual mode without collaborative');
+}
+
+// Test 26: Task and context included
 console.log('\nTask & context:');
 {
   const result = compilePrompt({ selectedRole: 'philosopher', task: 'Evaluate my argument', context: 'Ethics class' });
@@ -385,7 +529,7 @@ console.log('\nTask & context:');
   assert(result.prompt.includes('**Context:** Ethics class'), 'context included');
 }
 
-// Test 8: Sensitive role gets guardrail
+// Test 27: Sensitive role gets guardrail
 console.log('\nSensitive role guardrails:');
 {
   const result = compilePrompt({ selectedRole: 'lawyer', guardrailsEnabled: true });
@@ -393,28 +537,28 @@ console.log('\nSensitive role guardrails:');
   assert(result.prompt.includes('INFORMATIONAL ONLY'), 'disclaimer included');
 }
 
-// Test 9: Guardrails can be disabled
+// Test 28: Guardrails can be disabled
 console.log('\nGuardrails disabled:');
 {
   const result = compilePrompt({ selectedRole: 'lawyer', guardrailsEnabled: false });
   assert(!result.prompt.includes('INFORMATIONAL ONLY'), 'no disclaimer when guardrails disabled');
 }
 
-// Test 10: Output format applied
+// Test 29: Output format applied
 console.log('\nOutput format:');
 {
   const result = compilePrompt({ selectedRole: 'philosopher', outputFormat: 'bullet' });
   assert(result.prompt.includes('Use bullet points for your response'), 'bullet format instruction present');
 }
 
-// Test 11: First output text
+// Test 30: First output text
 console.log('\nFirst output text:');
 {
   const result = compilePrompt({ selectedRole: 'philosopher', firstOutputText: 'Start with a summary' });
   assert(result.prompt.includes('First output should be: Start with a summary'), 'first output instruction present');
 }
 
-// Test 12: Custom constraints applied
+// Test 31: Custom constraints applied
 console.log('\nCustom constraints:');
 {
   const result = compilePrompt({ selectedRole: 'philosopher', constraints: { risks: true, stepByStep: true } });
@@ -422,23 +566,36 @@ console.log('\nCustom constraints:');
   assert(result.prompt.includes('step-by-step plan'), 'custom step-by-step constraint applied');
 }
 
-// Test 13: Spine cannot be removed (always present regardless of mode toggles)
-console.log('\nSpine immutability:');
+// Test 32: Spine cannot be removed (always present regardless of modes)
+console.log('\nSpine immutability across all mode combinations:');
 {
   const configs = [
     { label: 'no modes', opts: {} },
-    { label: 'intake only', opts: { intakeMode: true } },
-    { label: 'collaborative only', opts: { modes: { collaborative: true } } },
-    { label: 'intake + collaborative', opts: { intakeMode: true, modes: { collaborative: true } } },
-    { label: 'absolute', opts: { modes: { absolute: true } } },
-    { label: 'executive', opts: { modes: { executive: true } } },
-    { label: 'all modes', opts: { intakeMode: true, modes: { collaborative: true, absolute: true, executive: true } } }
+    { label: 'intake only', opts: { enabledModes: ['intake'] } },
+    { label: 'collaborative only', opts: { enabledModes: ['collaborative'] } },
+    { label: 'intake + collaborative', opts: { enabledModes: ['intake', 'collaborative'] } },
+    { label: 'absolute', opts: { enabledModes: ['absolute'] } },
+    { label: 'executive', opts: { enabledModes: ['executive'] } },
+    { label: 'all modes', opts: { enabledModes: MODE_REGISTRY.map(m => m.id) } },
+    { label: 'checklist only', opts: { enabledModes: ['checklist'] } },
+    { label: 'decision-memo', opts: { enabledModes: ['decision-memo'] } }
   ];
   configs.forEach(({ label, opts }) => {
     const result = compilePrompt({ selectedRole: 'philosopher', ...opts });
     assert(result.prompt.includes('EXPERT OPERATING CONTRACT'), `spine present with ${label}`);
     assert(result.prompt.includes('§3 REJECTION RIGHTS'), `rejection rights present with ${label}`);
   });
+}
+
+// Test 33: Mode determinism — order is consistent
+console.log('\nMode determinism:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher', enabledModes: ['absolute', 'evidence-citations', 'structured-output'] });
+  const structuredPos = result.prompt.indexOf('STRUCTURED OUTPUT');
+  const evidencePos = result.prompt.indexOf('EVIDENCE & CITATIONS');
+  const absolutePos = result.prompt.indexOf('ABSOLUTE MODE');
+  assert(structuredPos < evidencePos, 'structured-output before evidence-citations (registry order)');
+  assert(evidencePos < absolutePos, 'evidence-citations before absolute (registry order)');
 }
 
 // Summary

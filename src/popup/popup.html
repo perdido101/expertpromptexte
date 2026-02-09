@@ -60,55 +60,6 @@
       <div id="suggestions" class="suggestions hidden"></div>
     </div>
 
-    <!-- Expert Intake Toggle (always visible) -->
-    <div class="modes-section">
-      <label class="mode-toggle">
-        <input type="checkbox" id="mode-intake">
-        <span class="mode-toggle-slider"></span>
-        <div class="mode-toggle-text">
-          <span class="mode-toggle-label">Expert Intake</span>
-          <span class="mode-toggle-hint">Ask clarifying questions first. No solutions until you answer.</span>
-        </div>
-      </label>
-    </div>
-
-    <!-- Modes Accordion -->
-    <div id="modes-accordion-section" class="collapsible-section">
-      <button class="section-header" data-toggle="modes-content">
-        <span>Modes</span>
-        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      <div id="modes-content" class="section-content hidden">
-        <div class="mode-toggle-row">
-          <label class="mode-toggle">
-            <input type="checkbox" id="mode-collaborative">
-            <span class="mode-toggle-slider"></span>
-            <div class="mode-toggle-text">
-              <span class="mode-toggle-label">Collaborative</span>
-              <span class="mode-toggle-hint">Work together iteratively. Draft, refine, and explore options.</span>
-            </div>
-          </label>
-          <label class="mode-toggle">
-            <input type="checkbox" id="mode-absolute">
-            <span class="mode-toggle-slider"></span>
-            <div class="mode-toggle-text">
-              <span class="mode-toggle-label">Absolute</span>
-              <span class="mode-toggle-hint">Direct, blunt, zero filler. Maximum information density.</span>
-            </div>
-          </label>
-          <label class="mode-toggle">
-            <input type="checkbox" id="mode-executive">
-            <span class="mode-toggle-slider"></span>
-            <div class="mode-toggle-text">
-              <span class="mode-toggle-label">Executive Summary</span>
-              <span class="mode-toggle-hint">Bottom-line-up-front briefing. Key findings, risks, next steps.</span>
-            </div>
-          </label>
-        </div>
-        <p id="dual-mode-hint" class="dual-mode-hint hidden">Intake + Collaborative: questions first, collaboration after.</p>
-      </div>
-    </div>
-
     <!-- Context Section -->
     <div id="context-section" class="collapsible-section">
       <button class="section-header" data-toggle="context-content">
@@ -140,6 +91,139 @@
             <option value="actionable">Actionable steps only</option>
           </select>
         </div>
+      </div>
+    </div>
+
+    <!-- Modes Accordion -->
+    <div id="modes-accordion-section" class="collapsible-section">
+      <button class="section-header" data-toggle="modes-content">
+        <span>Modes</span>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div id="modes-content" class="section-content hidden">
+        <div class="mode-toggle-row">
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="intake">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Expert Intake</span>
+              <span class="mode-toggle-hint">Ask clarifying questions first. No solutions until you answer.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="collaborative">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Collaborative</span>
+              <span class="mode-toggle-hint">Work together iteratively. Draft, refine, and explore options.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="assume-defaults">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Assume Reasonable Defaults</span>
+              <span class="mode-toggle-hint">Proceed without questions; state assumptions clearly.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="structured-output">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Structured Output</span>
+              <span class="mode-toggle-hint">Use headings and bullet points with a clear hierarchy.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="concise">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Concise</span>
+              <span class="mode-toggle-hint">Short, direct answers. Minimal explanation.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="deep-dive">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Deep Dive</span>
+              <span class="mode-toggle-hint">Thorough reasoning, edge cases, and alternatives.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="action-plan">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Action Plan</span>
+              <span class="mode-toggle-hint">Convert advice into step-by-step execution tasks.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="checklist">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Checklist Only</span>
+              <span class="mode-toggle-hint">Output only a checklist. No narrative.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="evidence-citations">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Evidence &amp; Citations (No Fabrication)</span>
+              <span class="mode-toggle-hint">Use citations only when available; never invent sources.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="risk-compliance">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Risk &amp; Compliance Lens</span>
+              <span class="mode-toggle-hint">Flag risks, constraints, and compliance concerns early.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="decision-memo">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Decision Memo</span>
+              <span class="mode-toggle-hint">Write like an internal decision brief with options.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="generate-options">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Generate Options</span>
+              <span class="mode-toggle-hint">Provide 3-7 distinct options with pros/cons.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="templates-examples">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Templates &amp; Examples</span>
+              <span class="mode-toggle-hint">Include reusable templates and a filled example.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="absolute">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Absolute</span>
+              <span class="mode-toggle-hint">Direct, blunt, zero filler. Maximum information density.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" data-mode="executive">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Executive Summary</span>
+              <span class="mode-toggle-hint">Bottom-line-up-front briefing. Key findings, risks, next steps.</span>
+            </div>
+          </label>
+        </div>
+        <p id="mode-conflict-hint" class="dual-mode-hint hidden"></p>
       </div>
     </div>
 
