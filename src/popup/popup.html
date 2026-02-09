@@ -60,27 +60,53 @@
       <div id="suggestions" class="suggestions hidden"></div>
     </div>
 
-    <!-- Modes Section (always visible, not in accordion) -->
+    <!-- Expert Intake Toggle (always visible) -->
     <div class="modes-section">
-      <div class="mode-toggle-row">
-        <label class="mode-toggle">
-          <input type="checkbox" id="mode-intake">
-          <span class="mode-toggle-slider"></span>
-          <div class="mode-toggle-text">
-            <span class="mode-toggle-label">Expert Intake</span>
-            <span class="mode-toggle-hint">Ask clarifying questions first. No solutions until you answer.</span>
-          </div>
-        </label>
-        <label class="mode-toggle">
-          <input type="checkbox" id="mode-collaborative">
-          <span class="mode-toggle-slider"></span>
-          <div class="mode-toggle-text">
-            <span class="mode-toggle-label">Collaborative</span>
-            <span class="mode-toggle-hint">Work together iteratively. Draft, refine, and explore options.</span>
-          </div>
-        </label>
+      <label class="mode-toggle">
+        <input type="checkbox" id="mode-intake">
+        <span class="mode-toggle-slider"></span>
+        <div class="mode-toggle-text">
+          <span class="mode-toggle-label">Expert Intake</span>
+          <span class="mode-toggle-hint">Ask clarifying questions first. No solutions until you answer.</span>
+        </div>
+      </label>
+    </div>
+
+    <!-- Modes Accordion -->
+    <div id="modes-accordion-section" class="collapsible-section">
+      <button class="section-header" data-toggle="modes-content">
+        <span>Modes</span>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <div id="modes-content" class="section-content hidden">
+        <div class="mode-toggle-row">
+          <label class="mode-toggle">
+            <input type="checkbox" id="mode-collaborative">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Collaborative</span>
+              <span class="mode-toggle-hint">Work together iteratively. Draft, refine, and explore options.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" id="mode-absolute">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Absolute</span>
+              <span class="mode-toggle-hint">Direct, blunt, zero filler. Maximum information density.</span>
+            </div>
+          </label>
+          <label class="mode-toggle">
+            <input type="checkbox" id="mode-executive">
+            <span class="mode-toggle-slider"></span>
+            <div class="mode-toggle-text">
+              <span class="mode-toggle-label">Executive Summary</span>
+              <span class="mode-toggle-hint">Bottom-line-up-front briefing. Key findings, risks, next steps.</span>
+            </div>
+          </label>
+        </div>
+        <p id="dual-mode-hint" class="dual-mode-hint hidden">Intake + Collaborative: questions first, collaboration after.</p>
       </div>
-      <p id="dual-mode-hint" class="dual-mode-hint hidden">When both are on: questions first, collaboration after.</p>
     </div>
 
     <!-- Context Section -->
