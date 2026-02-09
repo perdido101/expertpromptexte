@@ -49,13 +49,7 @@ const DISCLAIMERS = {
 
 const SENSITIVE_KEYWORDS = ['legal', 'lawyer', 'attorney', 'medical', 'doctor'];
 
-const MODE_PRESETS = {
-  default: { noQuestions: false, noEmojis: false, bullets: false, concise: false, stepByStep: false, risks: false },
-  absolute: { noQuestions: true, noEmojis: true, bullets: false, concise: true, stepByStep: false, risks: false },
-  collaborative: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
-  intake: { noQuestions: false, noEmojis: true, bullets: false, concise: false, stepByStep: false, risks: false },
-  executive: { noQuestions: true, noEmojis: true, bullets: true, concise: true, stepByStep: false, risks: true }
-};
+// MODE_PRESETS no longer used — modes are independent toggles
 
 const OUTPUT_FORMAT_MAP = {
   '': '',
@@ -112,8 +106,39 @@ function generateUnknownRoleBlock(roleName) {
   return `**Your role: ${cap}**\n\nDomain: ${cap} — providing expertise and guidance within this professional domain.`;
 }
 
+const COLLABORATIVE_MODE_BLOCK = `
+
+COLLABORATIVE MODE
+
+You are working iteratively with the user. For your initial response:
+- Provide an immediate draft, proposal, or set of options — do not wait.
+- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
+- Invite the user to refine, redirect, or drill deeper after each response.
+- Ask follow-up questions naturally during the conversation to sharpen your output.
+- Treat every exchange as a refinement cycle: draft → feedback → improve.`;
+
+const DUAL_MODE_BLOCK = `
+
+EXPERT INTAKE PROTOCOL (MANDATORY — PHASE 1)
+
+Before providing ANY analysis, advice, or recommendations, you MUST complete the intake phase:
+
+1. Ask 3–6 high-leverage diagnostic questions. For each question, include a brief "(Why this matters: ...)" explanation so the user understands what you are calibrating.
+2. DO NOT provide solutions, recommendations, or analysis until the user has answered your intake questions.
+3. Wait for the user's answers before proceeding to Phase 2.
+
+Begin your first message with your intake questions only. No preamble, no partial advice.
+
+COLLABORATIVE REFINEMENT (PHASE 2 — after user answers)
+
+Once the user has answered your intake questions:
+- Provide an initial draft or set of options informed by their answers.
+- Present 2–3 alternative approaches when reasonable, explaining trade-offs.
+- Invite the user to refine, redirect, or drill deeper.
+- Continue iteratively: draft → feedback → improve.`;
+
 function compilePrompt(state) {
-  const { selectedRole, mode = 'default', constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
+  const { selectedRole, intakeMode = false, collaborativeMode = false, constraints = {}, task = '', context = '', outputFormat = '', firstOutputText = '', guardrailsEnabled = true } = state;
   const roleInput = selectedRole || '';
   const q = roleInput.toLowerCase().trim();
 
@@ -134,13 +159,16 @@ function compilePrompt(state) {
   let prompt = buildExpertSpine(roleNames[0]);
   prompt += '\n\n' + roleBlock;
 
-  if (mode === 'intake') {
+  if (intakeMode && collaborativeMode) {
+    prompt += DUAL_MODE_BLOCK;
+  } else if (intakeMode) {
     prompt += INTAKE_MODE_BLOCK;
+  } else if (collaborativeMode) {
+    prompt += COLLABORATIVE_MODE_BLOCK;
   }
 
   const activeConstraints = [];
-  const modePreset = MODE_PRESETS[mode] || MODE_PRESETS.default;
-  const c = { ...modePreset, ...constraints };
+  const c = { ...constraints };
 
   if (c.noQuestions) activeConstraints.push('Do not ask clarifying questions; work with what is provided');
   if (c.noEmojis) activeConstraints.push('Do not use emojis in your response');
@@ -152,9 +180,6 @@ function compilePrompt(state) {
   activeConstraints.push('Be direct; avoid unnecessary hedging');
   activeConstraints.push('If uncertain, say so explicitly');
   activeConstraints.push('Do not fabricate sources or citations');
-  if (!c.noQuestions && mode === 'collaborative') {
-    activeConstraints.push('Ask clarifying questions before providing your analysis');
-  }
 
   prompt += `\n\nConstraints:\n${activeConstraints.map(x => `- ${x}`).join('\n')}`;
 
@@ -169,9 +194,7 @@ function compilePrompt(state) {
   if (!outputFormat || !['bullet', 'numbered', 'table', 'json'].includes(outputFormat)) {
     outputSection += '- Use structured formatting (bullets, headers) when helpful\n';
   }
-  if (mode !== 'absolute') {
-    outputSection += '- End with a suggested next step or follow-up question if appropriate';
-  }
+  outputSection += '- End with a suggested next step or follow-up question if appropriate';
   prompt += '\n\n' + outputSection;
 
   if (task || context) {
@@ -235,31 +258,43 @@ console.log('\nUnknown role fallback:');
 // Test 4: Intake mode adds protocol
 console.log('\nIntake mode:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', mode: 'intake' });
+  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true });
   assert(result.prompt.includes('EXPERT INTAKE PROTOCOL (MANDATORY)'), 'intake protocol block present');
   assert(result.prompt.includes('3–6 high-leverage diagnostic questions'), 'intake specifies question count');
   assert(result.prompt.includes('Why this matters'), 'intake requires justification');
   assert(result.prompt.includes('DO NOT provide solutions'), 'intake gates advice');
 }
 
-// Test 5: Intake mode is NOT present in other modes
-console.log('\nIntake mode absent in other modes:');
+// Test 5: Collaborative mode adds iterative block
+console.log('\nCollaborative mode:');
 {
-  const defaultResult = compilePrompt({ selectedRole: 'philosopher', mode: 'default' });
-  assert(!defaultResult.prompt.includes('EXPERT INTAKE PROTOCOL'), 'no intake in default mode');
-
-  const collabResult = compilePrompt({ selectedRole: 'philosopher', mode: 'collaborative' });
-  assert(!collabResult.prompt.includes('EXPERT INTAKE PROTOCOL'), 'no intake in collaborative mode');
-  assert(collabResult.prompt.includes('Ask clarifying questions before'), 'collaborative has its own question behavior');
+  const result = compilePrompt({ selectedRole: 'philosopher', collaborativeMode: true });
+  assert(result.prompt.includes('COLLABORATIVE MODE'), 'collaborative block present');
+  assert(result.prompt.includes('immediate draft'), 'collaborative allows immediate output');
+  assert(result.prompt.includes('refinement cycle'), 'collaborative is iterative');
+  assert(!result.prompt.includes('EXPERT INTAKE PROTOCOL'), 'no intake in collaborative-only mode');
 }
 
-// Test 6: Absolute mode constraints
-console.log('\nAbsolute mode:');
+// Test 6: Dual mode (both enabled) — intake first, then collaborative
+console.log('\nDual mode (intake + collaborative):');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', mode: 'absolute' });
-  assert(result.prompt.includes('Do not ask clarifying questions'), 'absolute suppresses questions');
-  assert(result.prompt.includes('Be ultra concise'), 'absolute enforces conciseness');
-  assert(!result.prompt.includes('End with a suggested next step'), 'absolute omits follow-up suggestion');
+  const result = compilePrompt({ selectedRole: 'philosopher', intakeMode: true, collaborativeMode: true });
+  assert(result.prompt.includes('PHASE 1'), 'dual mode has Phase 1');
+  assert(result.prompt.includes('PHASE 2'), 'dual mode has Phase 2');
+  assert(result.prompt.includes('intake questions only'), 'Phase 1 gates advice');
+  assert(result.prompt.includes('COLLABORATIVE REFINEMENT'), 'Phase 2 is collaborative');
+  const phase1Pos = result.prompt.indexOf('PHASE 1');
+  const phase2Pos = result.prompt.indexOf('PHASE 2');
+  assert(phase1Pos < phase2Pos, 'Phase 1 comes before Phase 2');
+}
+
+// Test 6b: Neither mode enabled — no mode blocks
+console.log('\nNo modes enabled:');
+{
+  const result = compilePrompt({ selectedRole: 'philosopher' });
+  assert(!result.prompt.includes('EXPERT INTAKE PROTOCOL'), 'no intake when modes off');
+  assert(!result.prompt.includes('COLLABORATIVE MODE'), 'no collaborative when modes off');
+  assert(!result.prompt.includes('PHASE 1'), 'no dual mode when modes off');
 }
 
 // Test 7: Task and context included
@@ -299,22 +334,27 @@ console.log('\nFirst output text:');
   assert(result.prompt.includes('First output should be: Start with a summary'), 'first output instruction present');
 }
 
-// Test 12: Custom constraints merge with mode
+// Test 12: Custom constraints applied
 console.log('\nCustom constraints:');
 {
-  const result = compilePrompt({ selectedRole: 'philosopher', mode: 'default', constraints: { risks: true, stepByStep: true } });
+  const result = compilePrompt({ selectedRole: 'philosopher', constraints: { risks: true, stepByStep: true } });
   assert(result.prompt.includes('Include potential risks'), 'custom risk constraint applied');
   assert(result.prompt.includes('step-by-step plan'), 'custom step-by-step constraint applied');
 }
 
-// Test 13: Spine cannot be removed (always present regardless of options)
+// Test 13: Spine cannot be removed (always present regardless of mode toggles)
 console.log('\nSpine immutability:');
 {
-  const modes = ['default', 'absolute', 'collaborative', 'intake', 'executive'];
-  modes.forEach(mode => {
-    const result = compilePrompt({ selectedRole: 'philosopher', mode });
-    assert(result.prompt.includes('EXPERT OPERATING CONTRACT'), `spine present in ${mode} mode`);
-    assert(result.prompt.includes('§3 REJECTION RIGHTS'), `rejection rights present in ${mode} mode`);
+  const configs = [
+    { label: 'no modes', opts: {} },
+    { label: 'intake only', opts: { intakeMode: true } },
+    { label: 'collaborative only', opts: { collaborativeMode: true } },
+    { label: 'both modes', opts: { intakeMode: true, collaborativeMode: true } }
+  ];
+  configs.forEach(({ label, opts }) => {
+    const result = compilePrompt({ selectedRole: 'philosopher', ...opts });
+    assert(result.prompt.includes('EXPERT OPERATING CONTRACT'), `spine present with ${label}`);
+    assert(result.prompt.includes('§3 REJECTION RIGHTS'), `rejection rights present with ${label}`);
   });
 }
 
